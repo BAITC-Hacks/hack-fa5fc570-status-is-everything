@@ -1,0 +1,7 @@
+## 🚀 Quick Demo Guide
+
+Для быстрой демонстрации работы WindMind AI:
+
+1. Запустите приложение:
+   ```bash
+   streamlit run app.py
