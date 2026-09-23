@@ -718,7 +718,7 @@ if nav_page == "Обзор системы":
     with k4:
         ramp_max = float(piv["disp_total"].diff().abs().max())
         calm_cnt = int((piv["wind_mean"] < 3.0).sum())
-        risk_label = "ВНИМАНИЕ" if (calm_cnt > 0 or max_wind > 20.0 or ramp_max > 0.4) else "НОРМА"
+        risk_label = "ВНИМАНИЕ" if (calm_cnt >= 3 or max_wind >= 20.0 or ramp_max >= 0.8) else "НОРМА"
         risk_col = "#F59E0B" if risk_label == "ВНИМАНИЕ" else "#22C55E"
         st.markdown(f"""
         <div class="kpi-card">
@@ -947,8 +947,8 @@ if nav_page == "Обзор системы":
         """, unsafe_allow_html=True)
 
     with r2:
-        lw_tag = f"ВНИМАНИЕ ({calm_cnt} ч.)" if calm_cnt > 0 else "НОРМА"
-        lw_cls = "risk-tag-watch" if calm_cnt > 0 else "risk-tag-normal"
+        lw_tag = f"ВНИМАНИЕ ({calm_cnt} ч.)" if calm_cnt >= 3 else "НОРМА"
+        lw_cls = "risk-tag-watch" if calm_cnt >= 3 else "risk-tag-normal"
         st.markdown(f"""
         <div class="risk-pill">
             <span>ШТИЛЬ (<3 м/с)</span>
@@ -957,8 +957,8 @@ if nav_page == "Обзор системы":
         """, unsafe_allow_html=True)
 
     with r3:
-        ic_tag = "ВНИМАНИЕ" if min_temp < 0 else "НОРМА"
-        ic_cls = "risk-tag-watch" if min_temp < 0 else "risk-tag-normal"
+        ic_tag = "ВНИМАНИЕ" if min_temp < -4 else "НОРМА"
+        ic_cls = "risk-tag-watch" if min_temp < -4 else "risk-tag-normal"
         st.markdown(f"""
         <div class="risk-pill">
             <span>ОБЛЕДЕНЕНИЕ</span>
@@ -967,8 +967,8 @@ if nav_page == "Обзор системы":
         """, unsafe_allow_html=True)
 
     with r4:
-        ramp_cls = "risk-tag-watch" if ramp_max > 0.3 else "risk-tag-normal"
-        ramp_status = f"ВНИМАНИЕ ({ramp_max:.2f})" if ramp_max > 0.3 else f"НОРМА ({ramp_max:.2f})"
+        ramp_cls = "risk-tag-watch" if ramp_max >= 0.8 else "risk-tag-normal"
+        ramp_status = f"ВНИМАНИЕ ({ramp_max:.2f})" if ramp_max >= 0.8 else f"НОРМА ({ramp_max:.2f})"
         st.markdown(f"""
         <div class="risk-pill">
             <span>МАКС. СКАЧОК/Ч</span>
