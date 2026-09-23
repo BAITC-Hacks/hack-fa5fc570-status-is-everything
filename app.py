@@ -1022,17 +1022,20 @@ elif nav_page == "ИИ-Агент":
     t_model = (time.perf_counter() - t3) * 1000.0
 
     if agent_run_clicked:
-        try:
-            WindFarmAgent(config=config)._event(
-                "agent_execution_trace",
-                origin=origin_str,
-                horizon=horizon,
-                strict_weather=check_strict,
-                model_type="HistGradientBoostingRegressor",
-                duration_ms=t_check + t_weather + t_val + t_model
+        if not check_strict:
+            st.warning(
+                "Строгий цикл не запущен: отсутствуют data/weather/forecasts.csv "
+                "и source.json. Текущий экран остаётся исследовательским Previous Runs."
             )
-        except Exception:
-            pass
+        else:
+            try:
+                result = WindFarmAgent(config=config).execute_agent_cycle(
+                    origin_ts, horizon_hours=horizon
+                )
+                state = "пересчитан" if result["changed"] else "повторно использован без изменений"
+                st.success(f"Строгий агентский цикл завершён: прогноз {state}.")
+            except Exception as exc:
+                st.error(f"Строгий агентский цикл завершился ошибкой: {exc}")
 
     st.markdown("""
     <div style="font-size: 14.5px; font-weight: 600; color: #F5F7FA; margin: 16px 0 10px 0;">
