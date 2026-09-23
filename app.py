@@ -23,7 +23,7 @@ from src.settings import ROOT, load_config
 # --- Настройка страницы ---
 st.set_page_config(
     page_title="WindMind AI — Диспетчерский центр Шелекской ВЭС",
-    page_icon="⚡",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -628,7 +628,7 @@ if nav_page == "Обзор системы":
 
     # Предупреждение о неподтверждённых единицах при включении МВт
     if show_mw:
-        st.warning("⚠️ Внимание: целевая переменная SCADA строго нормализована [0..1]. Коэффициент перевода normalization_to_mw в настройках не подтверждён. Значения МВт являются гипотетическими.")
+        st.warning("ВНИМАНИЕ: целевая переменная SCADA строго нормализована [0..1]. Коэффициент перевода normalization_to_mw в настройках не подтверждён. Значения МВт являются гипотетическими.")
 
     # Кнопки взаимодействия
     col_btn1, col_btn2, _ = st.columns([2.5, 2.5, 5])
@@ -1056,7 +1056,7 @@ elif nav_page == "ИИ-Агент":
         st.markdown(f"""
         <div style="background: #101720; border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <span class="mono" style="color: #21D4A7; font-weight: 700; margin-right: 8px;">✓</span>
+                <span class="mono" style="color: #21D4A7; font-weight: 700; margin-right: 8px;">OK</span>
                 <span style="font-weight: 600; color: #F5F7FA; font-size: 13px;">{title}</span>
                 <div style="color: #94A3B8; font-size: 12px; margin-top: 2px;">{desc}</div>
             </div>

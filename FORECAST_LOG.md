@@ -1,4 +1,4 @@
-# 📊 Forecast Test Log
+# Forecast Test Log
 
 Этот файл используется для фиксации тестовых запусков WindMind AI.
 
@@ -41,8 +41,8 @@
 
 ## Current Status
 
-🟢 Core forecasting pipeline — working  
-🟢 Two-turbine prediction — working  
-🟢 Agent execution — working  
-🟡 UI improvements — in progress  
-🟡 Additional weather visualization — in progress
+OK Core forecasting pipeline — working
+OK Two-turbine prediction — working
+OK Agent execution — working
+IN PROGRESS UI improvements
+IN PROGRESS Additional weather visualization

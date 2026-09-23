@@ -1,4 +1,4 @@
-# 🚀 WindMind AI — Demo Guide
+# WindMind AI — Demo Guide
 
 Этот файл содержит короткий сценарий демонстрации проекта для жюри HackAlem AI.
 
