@@ -1,0 +1,38 @@
+{
+  "turbine_1": {
+    "model": {
+      "mae": 0.024855265486069086,
+      "rmse": 0.048330671931634143
+    },
+    "baseline": {
+      "mae": 0.03532162236369012,
+      "rmse": 0.058431690369466424
+    },
+    "train_rows": 22922,
+    "validation_rows": 744,
+    "validation_start": "2026-01-01 00:00:00",
+    "validation_end_exclusive": "2026-02-01 00:00:00",
+    "validation_calendar_hours": 744,
+    "final_train_rows": 23666,
+    "final_train_max": "2026-01-31 23:00:00",
+    "limitation": "Validation uses observed wind and temperature; this is NOT 24-48h forecast accuracy. February is excluded from training."
+  },
+  "turbine_2": {
+    "model": {
+      "mae": 0.027006065462224314,
+      "rmse": 0.06415146852615136
+    },
+    "baseline": {
+      "mae": 0.03918137119349124,
+      "rmse": 0.07289325086810483
+    },
+    "train_rows": 24040,
+    "validation_rows": 744,
+    "validation_start": "2026-01-01 00:00:00",
+    "validation_end_exclusive": "2026-02-01 00:00:00",
+    "validation_calendar_hours": 744,
+    "final_train_rows": 24784,
+    "final_train_max": "2026-01-31 23:00:00",
+    "limitation": "Validation uses observed wind and temperature; this is NOT 24-48h forecast accuracy. February is excluded from training."
+  }
+}

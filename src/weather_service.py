@@ -1,128 +1,70 @@
-"""
-Weather Scout service for Samruk WindPilot AI.
-Fetches historical weather forecasts from Open-Meteo Historical Forecast API
-with local caching for 100% offline reliability.
-"""
-
-import os
+"""Load documented numerical forecast releases; no reanalysis or synthetic fallback."""
+import hashlib
+import io
 import json
-import urllib.request
 import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-
-CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'weather_cache')
-os.makedirs(CACHE_DIR, exist_ok=True)
-
-# Coordinates of Shelek Wind Farm Turbines (Enbekshikazakh district, Almaty region, Kazakhstan)
-TURBINE_COORDS = {
-    1: {'lat': 43.645150, 'lon': 78.535604, 'name': 'Шелек ВЭС - Турбина 1'},
-    2: {'lat': 43.643198, 'lon': 78.538828, 'name': 'Шелек ВЭС - Турбина 2'},
-    'center': {'lat': 43.644174, 'lon': 78.537216, 'name': 'Шелек ВЭС (Общая)'}
-}
+from src.predict import aware_timestamp, validate_weather
+from src.settings import ROOT, load_config
 
 class WeatherService:
-    def __init__(self, use_cache: bool = True):
-        self.use_cache = use_cache
+    def __init__(self, use_cache=True, config=None):
+        self.config = config or load_config()
 
-    def _fetch_from_api(self, lat: float, lon: float, start_date: str, end_date: str) -> dict:
-        """Fetches hourly weather forecast from Open-Meteo Historical Forecast API."""
-        url = (
-            f"https://historical-forecast-api.open-meteo.com/v1/forecast"
-            f"?latitude={lat}&longitude={lon}"
-            f"&start_date={start_date}&end_date={end_date}"
-            f"&hourly=wind_speed_10m,wind_speed_80m,wind_speed_100m,wind_direction_100m,temperature_2m,surface_pressure,relative_humidity_2m"
-        )
-        req = urllib.request.Request(url, headers={'User-Agent': 'Samruk-WindPilot-AI/1.0'})
-        try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                data = json.loads(resp.read().decode('utf-8'))
-                return data
-        except Exception as e:
-            print(f"[WeatherService] API error: {e}. Trying fallback to archive API...")
-            archive_url = (
-                f"https://archive-api.open-meteo.com/v1/archive"
-                f"?latitude={lat}&longitude={lon}"
-                f"&start_date={start_date}&end_date={end_date}"
-                f"&hourly=wind_speed_10m,wind_speed_100m,wind_direction_100m,temperature_2m,surface_pressure,relative_humidity_2m"
-            )
-            req2 = urllib.request.Request(archive_url, headers={'User-Agent': 'Samruk-WindPilot-AI/1.0'})
-            with urllib.request.urlopen(req2, timeout=15) as resp2:
-                data = json.loads(resp2.read().decode('utf-8'))
-                return data
-
-    def prefetch_february_2026(self) -> pd.DataFrame:
-        """Prefetches and caches weather forecast for the entire test month of February 2026."""
-        cache_file = os.path.join(CACHE_DIR, "february_2026_forecast.csv")
-        if self.use_cache and os.path.exists(cache_file):
-            df = pd.read_csv(cache_file)
-            df['timestamp'] = pd.to_datetime(df['timestamp'])
-            return df
-        
-        print("[WeatherService] Fetching February 2026 forecast data from Open-Meteo...")
-        coords = TURBINE_COORDS['center']
-        # Including Jan 31 to Feb 28
-        raw_data = self._fetch_from_api(coords['lat'], coords['lon'], '2026-01-31', '2026-02-28')
-        
-        hourly = raw_data.get('hourly', {})
-        df = pd.DataFrame({
-            'timestamp': pd.to_datetime(hourly['time']),
-            'wind_speed_10m': hourly.get('wind_speed_10m', []),
-            'wind_speed_80m': hourly.get('wind_speed_80m', hourly.get('wind_speed_100m', [])),
-            'wind_speed_100m': hourly.get('wind_speed_100m', []),
-            'wind_direction_100m': hourly.get('wind_direction_100m', [0]*len(hourly['time'])),
-            'temperature_2m': hourly.get('temperature_2m', []),
-            'surface_pressure': hourly.get('surface_pressure', [900]*len(hourly['time'])),
-            'relative_humidity_2m': hourly.get('relative_humidity_2m', [60]*len(hourly['time'])),
-        })
-        # If wind_speed_100m has nulls or is missing, use log wind profile extrapolation from 10m
-        if df['wind_speed_100m'].isnull().any():
-            # Power law extrapolation: v(z) = v_ref * (z / z_ref)^alpha (alpha ~ 0.14-0.2 for terrain)
-            df['wind_speed_100m'] = df['wind_speed_100m'].fillna(df['wind_speed_10m'] * (100.0 / 10.0)**0.18)
-        
-        df.to_csv(cache_file, index=False)
-        print(f"[WeatherService] Successfully cached {len(df)} hourly forecast records.")
+    def load_releases(self):
+        path = ROOT / self.config["weather_file"]
+        manifest_path = ROOT / self.config["weather_manifest"]
+        if not path.exists() or not manifest_path.exists():
+            raise FileNotFoundError("Проверенные выпуски погоды отсутствуют. Нужны data/weather/forecasts.csv и source.json; старый кэш не используется.")
+        meta = json.loads(manifest_path.read_text(encoding="utf-8"))
+        required = ["provider", "source_url", "availability_evidence", "wind_height_m", "scada_wind_compatibility"]
+        if any(not meta.get(k) for k in required):
+            raise ValueError("Weather provenance, wind height or SCADA compatibility is undocumented")
+        if meta.get("kind") != "numerical_forecast" or meta.get("wind_speed_unit") != "m/s" or meta.get("temperature_unit") != "degC":
+            raise ValueError("Only numerical forecasts in m/s and degC are accepted")
+        raw = path.read_bytes()
+        if meta.get("sha256") != hashlib.sha256(raw).hexdigest():
+            raise ValueError("Weather CSV checksum does not match its provenance manifest")
+        df = pd.read_csv(io.BytesIO(raw))
+        required_cols = {"turbine_id", "issued_at", "available_at", "valid_time", "wind_speed", "temperature"}
+        if required_cols - set(df.columns):
+            raise ValueError(f"Missing release fields: {sorted(required_cols - set(df.columns))}")
+        for col in ["issued_at", "available_at", "valid_time"]:
+            df[col] = pd.to_datetime(df[col].map(aware_timestamp), utc=True)
+        if df.empty or df.turbine_id.isna().any() or not set(df.turbine_id).issubset(self.config["turbines"]):
+            raise ValueError("Empty weather input or unknown turbine")
+        if (df.available_at < df.issued_at).any():
+            raise ValueError("Invalid release availability")
+        if df.duplicated(["turbine_id", "issued_at", "valid_time"]).any():
+            raise ValueError("Conflicting or duplicate release records")
+        if (df.groupby(["turbine_id", "issued_at"]).available_at.nunique() != 1).any():
+            raise ValueError("One release must have one documented availability timestamp")
         return df
 
-    def get_forecast_as_of(self, as_of_date: str, horizon_hours: int = 48) -> pd.DataFrame:
-        """
-        Gets forecast available as of `as_of_date` for the next `horizon_hours` (24 or 48).
-        Simulates past forecasting without lookahead bias.
-        """
-        all_forecasts = self.prefetch_february_2026()
-        start_ts = pd.to_datetime(as_of_date)
-        end_ts = start_ts + timedelta(hours=horizon_hours)
-        
-        mask = (all_forecasts['timestamp'] >= start_ts) & (all_forecasts['timestamp'] < end_ts)
-        subset = all_forecasts[mask].copy().reset_index(drop=True)
-        return subset
+    def get_forecast_as_of(self, as_of_date, horizon_hours=48):
+        if horizon_hours not in (24, 48):
+            raise ValueError("horizon_hours must be 24 or 48")
+        origin = pd.Timestamp(as_of_date)
+        if origin.tzinfo is None:
+            if not self.config.get("timezone"):
+                raise ValueError("SCADA timezone is unresolved")
+            origin = origin.tz_localize(self.config["timezone"], ambiguous="raise", nonexistent="raise")
+        origin = origin.tz_convert("UTC")
+        if origin != origin.floor("h"):
+            raise ValueError("Forecast origin must be an hourly boundary")
+        releases = self.load_releases()
+        expected = pd.date_range(origin + pd.Timedelta(hours=1), periods=horizon_hours, freq="h")
+        selected = []
+        for tid in self.config["turbines"]:
+            eligible = releases[(releases.turbine_id == tid) & (releases.issued_at <= origin) & (releases.available_at <= origin)]
+            if eligible.empty:
+                raise ValueError(f"{tid}: no release available at {origin}")
+            latest = eligible.issued_at.max()
+            run = eligible[(eligible.issued_at == latest) & eligible.valid_time.isin(expected)].copy()
+            if set(run.valid_time) != set(expected) or len(run) != horizon_hours:
+                raise ValueError(f"{tid}: latest available release does not cover all {horizon_hours} hours")
+            run["forecast_origin"] = origin
+            selected.append(run)
+        return validate_weather(pd.concat(selected, ignore_index=True), self.config)
 
-    def simulate_weather_update(self, base_forecast: pd.DataFrame, shift_hours: int = 12) -> pd.DataFrame:
-        """
-        Simulates an incoming updated numerical weather prediction run (e.g. ECMWF mid-day run),
-        which updates wind speed predictions (introducing a weather front / change).
-        """
-        updated = base_forecast.copy()
-        # Add realistic weather model update delta (e.g. frontal passage with wind speed change)
-        np.random.seed(42)
-        n = len(updated)
-        # Shift starting after shift_hours
-        delta = np.zeros(n)
-        if n > shift_hours:
-            # Gradually changing wind speed by +/- 1.5 to 3.0 m/s
-            wave = np.sin(np.linspace(0, np.pi * 1.5, n - shift_hours)) * 2.2
-            delta[shift_hours:] = wave
-        
-        updated['wind_speed_100m'] = (updated['wind_speed_100m'] + delta).clip(lower=0.2)
-        updated['is_updated_run'] = True
-        return updated
-
-if __name__ == '__main__':
-    service = WeatherService(use_cache=False)
-    df_feb = service.prefetch_february_2026()
-    print("Sample February forecast:")
-    print(df_feb.head())
-    
-    sample_48h = service.get_forecast_as_of('2026-02-01 00:00:00', 48)
-    print(f"\nForecast as of 2026-02-01 00:00 (48h count: {len(sample_48h)}):")
-    print(sample_48h[['timestamp', 'wind_speed_100m', 'temperature_2m']].head())
+    def simulate_weather_update(self, *args, **kwargs):
+        raise ValueError("Synthetic updates disabled; publish a real documented weather release.")

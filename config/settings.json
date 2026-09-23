@@ -1,0 +1,16 @@
+{
+  "timezone": "Asia/Almaty",
+  "timezone_basis": "User confirmed Kazakhstan local time; Asia/Almaty selected for project location in Almaty region. Historical offset follows IANA tzdata.",
+  "timestamp_meaning": "interval_start",
+  "timestamp_meaning_status": "assumption_needs_confirmation",
+  "measurement_minutes": 10,
+  "min_hourly_coverage": 1.0,
+  "history_cutoff": "2026-02-01",
+  "validation_start": "2026-01-01",
+  "turbines": {
+    "turbine_1": {"file": "ВЭС/data/raw/Dataset HackAlemAI для участников 11.03.2023-28.02.2026 - turbine 1.csv", "latitude": null, "longitude": null, "normalization_to_mw": null},
+    "turbine_2": {"file": "ВЭС/data/raw/Dataset HackAlemAI для участников 11.03.2023-28.02.2026 - turbine 2.csv", "latitude": null, "longitude": null, "normalization_to_mw": null}
+  },
+  "weather_file": "data/weather/forecasts.csv",
+  "weather_manifest": "data/weather/source.json"
+}
