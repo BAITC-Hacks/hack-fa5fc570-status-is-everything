@@ -599,6 +599,8 @@ peak_time = piv.loc[peak_idx, "local_time"]
 max_wind = float(piv["wind_mean"].max())
 min_wind = float(piv["wind_mean"].min())
 min_temp = float(piv["temp_mean"].min())
+ramp_max = float(piv["disp_total"].diff().abs().max())
+calm_cnt = int((piv["wind_mean"] < 3.0).sum())
 piv["div"] = (piv["turbine_1"] - piv["turbine_2"]).abs()
 mean_div = float(piv["div"].mean() * 100.0)
 max_div = float(piv["div"].max() * 100.0)
@@ -716,8 +718,6 @@ if nav_page == "Обзор системы":
         """, unsafe_allow_html=True)
 
     with k4:
-        ramp_max = float(piv["disp_total"].diff().abs().max())
-        calm_cnt = int((piv["wind_mean"] < 3.0).sum())
         risk_label = "ВНИМАНИЕ" if (calm_cnt >= 3 or max_wind >= 20.0 or ramp_max >= 0.8) else "НОРМА"
         risk_col = "#F59E0B" if risk_label == "ВНИМАНИЕ" else "#22C55E"
         st.markdown(f"""
