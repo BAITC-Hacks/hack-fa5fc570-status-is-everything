@@ -106,12 +106,25 @@ st.markdown(f"""
         padding-top: 0 !important;
     }}
     
-    /* Убираем гигантский отступ сверху над заголовком WindMind AI */
-    [data-testid="stSidebar"] > div:first-child,
-    [data-testid="stSidebarContent"],
-    [data-testid="stSidebarUserContent"],
-    [data-testid="stSidebar"] .block-container {{
-        padding-top: 1rem !important;
+    /* Схлопываем пустые верхние контейнеры Streamlit (stSidebarHeader, stLogoSpacer, stSidebarNav) */
+    [data-testid="stSidebarHeader"],
+    [data-testid="stLogoSpacer"],
+    [data-testid="stSidebarNav"] {{
+        display: none !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }}
+
+    [data-testid="stSidebarContent"] {{
+        padding-top: 0 !important;
+    }}
+
+    [data-testid="stSidebarUserContent"] {{
+        padding-top: 0.5rem !important;
+        padding-left: 0.8rem !important;
+        padding-right: 0.8rem !important;
     }}
     
     [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
@@ -119,11 +132,9 @@ st.markdown(f"""
     }}
     
     .sidebar-header {{
-        padding: 0 0 14px 0;
+        padding: 0 0 10px 0;
         border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-        margin-bottom: 14px;
-    }}
-        margin-bottom: 16px;
+        margin-bottom: 12px;
     }}
     .sidebar-title {{
         font-size: 21px;
