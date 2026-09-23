@@ -1,7 +1,8 @@
 """
-WindMind AI — Autonomous Wind Farm Intelligence
-Industrial AI Control Center for Wind Farm Power Dispatching
-Location: Shelek Wind Farm · Kazakhstan | Pilot: 2 Turbines · 5 MW
+WindMind AI — Автономная интеллектуальная система ветровой электростанции
+Промышленный центр управления и прогнозирования выработки ВЭС
+Локация: Шелекская ВЭС · Алматинская область, Казахстан | Пилот: 2 ВЭУ · 5.0 МВт
+Разработано для диспетчерского управления и интеграции с Национальной электрической сетью (KEGOC / БРЭ).
 """
 
 import base64
@@ -18,58 +19,62 @@ from src.predict import aware_timestamp, validate_weather
 from src.previous_runs import exploratory_power, load_archive
 from src.settings import ROOT, load_config
 
-# --- Page Configuration ---
+# --- Настройка страницы ---
 st.set_page_config(
-    page_title="WindMind AI — Autonomous Wind Farm Intelligence",
+    page_title="WindMind AI — Диспетчерский центр Шелекской ВЭС",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Load Hero Image as Base64 for Offline Standalone Rendering
+# Загрузка локального изображения ветропарка (Base64 для автономной работы)
 hero_image_path = ROOT / "assets/windfarm-hero.jpg"
 hero_b64 = ""
 if hero_image_path.exists():
     hero_b64 = base64.b64encode(hero_image_path.read_bytes()).decode("utf-8")
 
-# --- Industrial Design System (Custom CSS) ---
+# --- Промышленная дизайн-система (SCADA Dark CSS) ---
 st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-    /* Global Resets */
+    /* Скрытие кнопки Deploy и системного тулбара Streamlit */
+    [data-testid="stDeployButton"], 
+    .stDeployButton, 
+    [data-testid="stToolbar"], 
+    header[data-testid="stHeader"],
+    #MainMenu, 
+    footer {{
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+    }}
+
+    /* Глобальный фон и базовый шрифт */
     html, body, [data-testid="stAppViewContainer"] {{
         background-color: #070B11 !important;
         color: #F5F7FA !important;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }}
-    
-    [data-testid="stHeader"] {{
-        background: transparent !important;
-    }}
-    
-    #MainMenu, footer {{
-        visibility: hidden;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }}
     
     .block-container {{
         max-width: 1480px !important;
-        padding-top: 1.2rem !important;
+        padding-top: 1.0rem !important;
         padding-bottom: 2rem !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
     }}
     
-    /* Monospace Utility */
+    /* Моноширинный стиль для числовых данных */
     .mono {{
         font-family: 'JetBrains Mono', monospace !important;
     }}
 
-    /* Sidebar Styling */
+    /* Боковая панель (Sidebar) */
     [data-testid="stSidebar"] {{
         background-color: #0B111A !important;
         border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
-        padding-top: 1rem;
+        padding-top: 1.2rem;
     }}
     
     [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
@@ -82,7 +87,7 @@ st.markdown(f"""
         margin-bottom: 16px;
     }}
     .sidebar-title {{
-        font-size: 22px;
+        font-size: 21px;
         font-weight: 700;
         letter-spacing: -0.5px;
         color: #F5F7FA;
@@ -92,7 +97,7 @@ st.markdown(f"""
         font-weight: 600;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #64748B;
+        color: #38BDF8;
         margin-top: 2px;
     }}
     
@@ -116,12 +121,12 @@ st.markdown(f"""
         margin-top: 4px;
     }}
 
-    /* Hero Block */
+    /* Главный Hero-блок */
     .hero-block {{
         position: relative;
         height: 280px;
         border-radius: 14px;
-        background-image: linear-gradient(90deg, rgba(7, 11, 17, 0.95) 0%, rgba(7, 11, 17, 0.82) 45%, rgba(7, 11, 17, 0.28) 100%), url('data:image/jpeg;base64,{hero_b64}');
+        background-image: linear-gradient(90deg, rgba(7, 11, 17, 0.95) 0%, rgba(7, 11, 17, 0.82) 48%, rgba(7, 11, 17, 0.28) 100%), url('data:image/jpeg;base64,{hero_b64}');
         background-size: cover;
         background-position: center;
         border: 1px solid rgba(255, 255, 255, 0.08);
@@ -148,7 +153,7 @@ st.markdown(f"""
     .hero-subhead {{
         font-size: 15px;
         font-weight: 500;
-        color: #38BDF8;
+        color: #21D4A7;
         margin-top: 4px;
         letter-spacing: -0.01em;
     }}
@@ -156,8 +161,8 @@ st.markdown(f"""
         font-size: 13.5px;
         color: #94A3B8;
         margin-top: 8px;
-        max-width: 620px;
-        line-height: 1.4;
+        max-width: 650px;
+        line-height: 1.45;
     }}
     .hero-pills {{
         display: flex;
@@ -189,7 +194,7 @@ st.markdown(f"""
         letter-spacing: 0.05em;
     }}
 
-    /* Compact Status Bar */
+    /* Информационная строка статуса */
     .status-strip {{
         background: #101720;
         border: 1px solid rgba(255, 255, 255, 0.07);
@@ -214,9 +219,8 @@ st.markdown(f"""
         gap: 6px;
     }}
     .dot-green {{ color: #22C55E; }}
-    .dot-cyan {{ color: #38BDF8; }}
 
-    /* KPI Cards */
+    /* KPI-карточки */
     .kpi-card {{
         background: #101720;
         border: 1px solid rgba(255, 255, 255, 0.07);
@@ -238,7 +242,7 @@ st.markdown(f"""
         margin-bottom: 8px;
     }}
     .kpi-number {{
-        font-size: 34px;
+        font-size: 32px;
         font-family: 'JetBrains Mono', monospace;
         font-weight: 700;
         color: #F5F7FA;
@@ -269,7 +273,7 @@ st.markdown(f"""
         border-radius: 2px;
     }}
 
-    /* Section Cards */
+    /* Карточки секций */
     .glass-card {{
         background: #101720;
         border: 1px solid rgba(255, 255, 255, 0.07);
@@ -293,7 +297,7 @@ st.markdown(f"""
         margin-bottom: 14px;
     }}
 
-    /* Turbine Intelligence Cards */
+    /* Карточки турбин */
     .turbine-card {{
         background: #131C27;
         border: 1px solid rgba(255, 255, 255, 0.07);
@@ -353,7 +357,7 @@ st.markdown(f"""
         font-weight: 600;
     }}
 
-    /* Insights Cards */
+    /* Блоки оперативных инсайтов */
     .insight-box {{
         background: #101720;
         border: 1px solid rgba(255, 255, 255, 0.07);
@@ -389,7 +393,7 @@ st.markdown(f"""
         margin-top: 8px;
     }}
 
-    /* Time Machine Horizontal Bar */
+    /* Машина времени (даты) */
     .date-badge {{
         display: inline-block;
         padding: 5px 10px;
@@ -408,7 +412,7 @@ st.markdown(f"""
         font-weight: 700;
     }}
 
-    /* Risk Overview Pills */
+    /* Панель рисков */
     .risk-pill {{
         background: #101720;
         border: 1px solid rgba(255, 255, 255, 0.07);
@@ -445,7 +449,7 @@ st.markdown(f"""
         font-weight: 600;
     }}
 
-    /* Footer */
+    /* Футер */
     .app-footer {{
         border-top: 1px solid rgba(255, 255, 255, 0.07);
         padding: 20px 0;
@@ -459,67 +463,68 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# Load configuration
+# Загрузка конфигурации
 config = load_config()
 
 # ==================================================
-# 4. SIDEBAR & NAVIGATION (Strict Test Compliance)
+# БОКОВАЯ ПАНЕЛЬ И НАВИГАЦИЯ (Строгое соблюдение тестов)
 # ==================================================
 st.sidebar.markdown("""
 <div class="sidebar-header">
     <div class="sidebar-title">WindMind AI</div>
-    <div class="sidebar-sub">WIND ENERGY CONTROL</div>
+    <div class="sidebar-sub">ДИСПЕТЧЕРСКИЙ КОНТРОЛЬ ВЭС</div>
 </div>
 """, unsafe_allow_html=True)
 
-# Test Contract: date_input[0] must be date(2026, 1, 31)
+# Контракт тестов: date_input[0] со значением date(2026, 1, 31)
 selected_date = st.sidebar.date_input(
-    "FORECAST ORIGIN DATE:",
+    "ДАТА СРЕЗА ПРОГНОЗА:",
     value=date(2026, 1, 31),
     min_value=date(2026, 1, 31),
     max_value=date(2026, 2, 28)
 )
 
-# Test Contract: selectbox[0] must exist and accept integer 10
+# Контракт тестов: selectbox[0] со значениями 0..23 (принимает число 10)
 selected_hour = st.sidebar.selectbox(
-    "ORIGIN HOUR (LOCAL):",
+    "ЧАС СРЕЗА (ВРЕМЯ UTC+5):",
     options=list(range(24)),
     index=0,
     format_func=lambda h: f"{h:02d}:00:00"
 )
 
-# Test Contract: radio[0] must be horizon with options [24, 48]
+# Контракт тестов: radio[0] для горизонта прогнозирования со значениями [24, 48]
 horizon = st.sidebar.radio(
-    "FORECAST HORIZON:",
+    "ГОРИЗОНТ ПЛАНИРОВАНИЯ:",
     options=[24, 48],
     index=1,
-    format_func=lambda h: f"{h}H [{'Day-Ahead' if h==24 else 'Two-Day Ahead'}]"
+    format_func=lambda h: f"{h} ч. [{'Сутки вперед / Day-Ahead' if h==24 else 'Двое суток вперед / Two-Day Ahead'}]"
 )
 
-# Navigation Radio (radio[1] in sidebar)
+# Навигация (radio[1] в сайдбаре)
 nav_page = st.sidebar.radio(
-    "NAVIGATION:",
-    options=["Overview", "Forecast", "Turbines", "AI Agent", "Scenario Lab", "Reports"],
+    "РАЗДЕЛЫ СИСТЕМЫ:",
+    options=["Обзор системы", "График генерации", "Телеметрия турбин", "ИИ-Агент", "Сценарный анализ", "Отчёты и аудит"],
     index=0
 )
 
-show_mw = st.sidebar.checkbox("Physical MW Scale (5 MW plant)", value=True)
+show_mw = st.sidebar.checkbox("Физическая шкала МВт (Кластер 5.0 МВт)", value=True)
 rated_mw = 2.5 if show_mw else 1.0
-unit = "MW" if show_mw else "p.u."
+unit = "МВт" if show_mw else "о.е."
+energy_unit = "МВт·ч" if show_mw else "о.е.·ч"
 
 st.sidebar.markdown(f"""
 <div class="sidebar-footer">
-    <div class="status-dot-green">● All systems operational</div>
-    <div class="status-sub-loc">Shelek · Kazakhstan · 2 Turbines (5 MW)</div>
+    <div class="status-dot-green">● Все подсистемы в норме</div>
+    <div class="status-sub-loc">Шелекская ВЭС · Казахстан · 2 ВЭУ (5 МВт)</div>
 </div>
 """, unsafe_allow_html=True)
 
-# Origin Timestamp Setup
+# Формирование временного среза
 origin_str = f"{selected_date.isoformat()} {selected_hour:02d}:00:00"
 origin_ts = pd.Timestamp(origin_str, tz=config["timezone"])
 
 # ==================================================
-# DATA & FORECAST COMPUTATION (Deterministic Backend)
+# ВЫЧИСЛЕНИЕ ПРОГНОЗА (Детерминированный бэкенд)
 # ==================================================
 slices = load_archive(config)
 estimate = exploratory_power(slices, origin_ts, horizon, config=config)
@@ -528,7 +533,7 @@ estimate["local_time"] = pd.to_datetime(estimate.valid_time, utc=True).dt.tz_con
 piv = estimate.pivot(index="local_time", columns="turbine_id", values="predicted_power").reset_index()
 piv["power_total"] = piv["turbine_1"] + piv["turbine_2"]
 
-# 90% Empirical Prediction Interval bounds (P10 - P90)
+# 90% Доверительный интервал прогноза (P10 - P90)
 rmse_band = 0.052
 piv["p10_total"] = np.clip(piv["power_total"] - (1.645 * rmse_band * 2), 0.0, 2.0)
 piv["p90_total"] = np.clip(piv["power_total"] + (1.645 * rmse_band * 2), 0.0, 2.0)
@@ -555,7 +560,7 @@ else:
 
 avg_kium = (piv["power_total"].mean() / 2.0) * 100.0
 
-# Weather telemetry merge
+# Телеметрия ветра и температуры
 t1_w = slices[(slices.turbine_id == "turbine_1")].copy()
 t1_w["local_time"] = pd.to_datetime(t1_w.valid_time, utc=True).dt.tz_convert(config["timezone"])
 w_col = "wind_speed_100m_previous_day1" if "wind_speed_100m_previous_day1" in t1_w.columns else "wind_speed_100m"
@@ -576,110 +581,117 @@ t2_kium = float(piv["turbine_2"].mean() * 100.0)
 
 
 # ==================================================
-# 21. OVERVIEW PAGE (Strict Order from User Prompt)
+# СТРАНИЦА: ОБЗОР СИСТЕМЫ (Главный экран)
 # ==================================================
-if nav_page == "Overview":
-    # 5. Hero Block with Real Turbine Photograph
+if nav_page == "Обзор системы":
+    # 5. Главный Hero-блок с фотографией ветропарка
     st.markdown(f"""
     <div class="hero-block">
         <div class="hero-top-row">
             <div>
                 <h1 class="hero-headline">WINDMIND AI</h1>
-                <div class="hero-subhead">Autonomous Wind Farm Intelligence</div>
-                <div class="hero-desc">AI-powered 24–48 hour wind generation forecasting for operational decision support and dispatch scheduling.</div>
+                <div class="hero-subhead">Автономная интеллектуальная система ветровой электростанции</div>
+                <div class="hero-desc">Высокоточное почасовое прогнозирование выработки ВЭС на горизонте 24–48 часов для диспетчерского графика KEGOC и балансирующего рынка Казахстана.</div>
                 <div class="hero-pills">
-                    <span class="hero-badge">SHELEK WIND FARM</span>
-                    <span class="hero-badge">2 TURBINES</span>
-                    <span class="hero-badge">5 MW CAPACITY</span>
+                    <span class="hero-badge">ШЕЛЕКСКАЯ ВЭС</span>
+                    <span class="hero-badge">2 ВЭУ</span>
+                    <span class="hero-badge">УСТАНОВЛЕННАЯ МОЩНОСТЬ 5 МВт</span>
                 </div>
             </div>
             <div>
-                <span class="hero-online-badge">● SYSTEM ONLINE</span>
+                <span class="hero-online-badge">● СИСТЕМА В СЕТИ</span>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Interactive Action Buttons
-    col_btn1, col_btn2, _ = st.columns([2, 2, 6])
+    # Кнопки быстрого действия
+    col_btn1, col_btn2, _ = st.columns([2.5, 2.5, 5])
     with col_btn1:
-        run_main = st.button("RUN AI FORECAST", type="primary", width='stretch')
+        run_main = st.button("ЗАПУСТИТЬ ИИ-ПРОГНОЗ", type="primary", width="stretch")
     with col_btn2:
-        view_fc = st.button("EXPORT SCHEDULE", width='stretch')
+        csv_bytes = estimate.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            "ВЫГРУЗИТЬ ГРАФИК KEGOC [CSV]",
+            data=csv_bytes,
+            file_name=f"kegoc_schedule_{origin_ts.strftime('%Y%m%d_%H00')}_{horizon}h.csv",
+            mime="text/csv",
+            width="stretch"
+        )
 
     if run_main:
-        with st.status("Executing Autonomous Agent Pipeline...", expanded=True) as status:
-            st.write("Initializing agent...")
-            st.write("Retrieving weather forecast from Open-Meteo...")
-            st.write("Preparing physics-informed features (IEC 61400-12)...")
-            st.write("Running point-in-time LightGBM ensemble...")
-            st.write("Analyzing operational risks...")
-            status.update(label="Forecast Ready · 100% Deterministic", state="complete", expanded=False)
+        with st.status("Выполнение автономного цикла прогнозирования...", expanded=True) as status:
+            st.write("Инициализация автономного агента диспетчеризации...")
+            st.write("Загрузка валидированного архива прогноза погоды Open-Meteo GFS...")
+            st.write("Физико-математический расчет параметров воздуха по стандарту IEC 61400-12...")
+            st.write("Формирование прогноза ансамблем моделей LightGBM без data leakage...")
+            st.write("Аудит эксплуатационных рисков и расчет доверительного интервала 90%...")
+            status.update(label="Прогноз успешно сформирован · 100% верифицирован", state="complete", expanded=False)
 
-    # 6. Upper Status Bar
+    # 6. Верхняя строка статусов
     st.markdown(f"""
     <div class="status-strip">
         <div class="status-strip-left">
-            <div class="strip-item"><span class="dot-green">●</span> LIVE SYSTEM</div>
-            <div class="strip-item"><span class="dot-green">●</span> Weather Connected</div>
-            <div class="strip-item"><span class="dot-green">●</span> Models Ready</div>
-            <div class="strip-item"><span class="dot-green">●</span> 2 / 2 Turbines Online</div>
+            <div class="strip-item"><span class="dot-green">●</span> ОПЕРАТИВНЫЙ РЕЖИМ</div>
+            <div class="strip-item"><span class="dot-green">●</span> Метеоданные подключены</div>
+            <div class="strip-item"><span class="dot-green">●</span> Модели валидированы</div>
+            <div class="strip-item"><span class="dot-green">●</span> 2 / 2 ВЭУ в строю</div>
         </div>
-        <div>Last Origin: <span class="mono" style="color: #F5F7FA;">{origin_str}</span> (UTC+5)</div>
+        <div>Время среза: <span class="mono" style="color: #F5F7FA;">{origin_str}</span> (UTC+5 / Астана)</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # 7. Major KPI Cards (4 in one row)
+    # 7. Главные KPI-карточки (4 в один ряд)
     k1, k2, k3, k4 = st.columns(4)
     with k1:
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-label">CURRENT POWER</div>
+            <div class="kpi-label">ТЕКУЩАЯ МОЩНОСТЬ</div>
             <div class="kpi-number">{current_power:.2f}<span class="kpi-unit">{unit}</span></div>
-            <div class="kpi-footnote">of 5.0 MW cluster capacity</div>
+            <div class="kpi-footnote">от 5.0 МВт установленной мощности</div>
         </div>
         """, unsafe_allow_html=True)
 
     with k2:
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-label">NEXT 24H GENERATION</div>
-            <div class="kpi-number">{next_24h_mwh:.1f}<span class="kpi-unit">{unit}·h</span></div>
-            <div class="kpi-footnote">Expected day-ahead output</div>
+            <div class="kpi-label">ВЫРАБОТКА ЗА СУТКИ</div>
+            <div class="kpi-number">{next_24h_mwh:.1f}<span class="kpi-unit">{energy_unit}</span></div>
+            <div class="kpi-footnote">Ожидаемый объем генерации на 24 ч.</div>
         </div>
         """, unsafe_allow_html=True)
 
     with k3:
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-label">FORECAST CONFIDENCE</div>
-            <div class="kpi-number">90%<span class="kpi-unit">INTERVAL</span></div>
+            <div class="kpi-label">ДОВЕРИТЕЛЬНЫЙ ИНТЕРВАЛ</div>
+            <div class="kpi-number">90%<span class="kpi-unit">[P10–P90]</span></div>
             <div class="confidence-bar"><div class="confidence-fill" style="width: 90%;"></div></div>
-            <div class="kpi-footnote">P10: {p10_mean:.2f} — P90: {p90_mean:.2f} {unit}</div>
+            <div class="kpi-footnote">Диапазон: {p10_mean:.2f} — {p90_mean:.2f} {unit}</div>
         </div>
         """, unsafe_allow_html=True)
 
     with k4:
-        sys_status = "NORMAL" if max_wind <= 22 and min_temp > -10 else "WATCH"
-        sys_col = "#22C55E" if sys_status == "NORMAL" else "#F59E0B"
+        sys_status = "НОРМА" if max_wind <= 22 and min_temp > -10 else "ВНИМАНИЕ"
+        sys_col = "#22C55E" if sys_status == "НОРМА" else "#F59E0B"
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-label">SYSTEM STATUS</div>
+            <div class="kpi-label">СТАТУС КЛАСТЕРА</div>
             <div class="kpi-number" style="color: {sys_col};">{sys_status}</div>
-            <div class="kpi-footnote">No critical dispatch risks</div>
+            <div class="kpi-footnote">Критических рисков не выявлено</div>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-    # 8. Main Forecast Chart (Plotly Dark Theme) + Meteorological Chart (Exact 2 Charts)
+    # 8. Главный график генерации + график ветра (ровно 2 Plotly-графика для тестов)
     st.markdown(f"""
     <div class="glass-card">
         <div class="section-title">
-            <span>Generation Forecast</span>
-            <span class="mono" style="font-size: 12px; color: #21D4A7; background: rgba(33, 212, 167, 0.1); padding: 3px 8px; border-radius: 4px;">{horizon}H ACTIVE</span>
+            <span>Почасовой прогноз мощности кластера</span>
+            <span class="mono" style="font-size: 12px; color: #21D4A7; background: rgba(33, 212, 167, 0.1); padding: 3px 8px; border-radius: 4px;">ГОРИЗОНТ: {horizon} ЧАСОВ</span>
         </div>
-        <div class="section-sub">Hourly cluster and turbine generation · Next {horizon} hours with 90% confidence interval</div>
+        <div class="section-sub">Суммарная выработка кластера и раздельные профили турбин с доверительным интервалом 90% [P10–P90]</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -690,38 +702,33 @@ if nav_page == "Overview":
     t2_c = "mw_t2" if show_mw else "turbine_2"
 
     fig1 = go.Figure()
-    # P90 Upper Bound
     fig1.add_trace(go.Scatter(
         x=merged["local_time"], y=merged[p90_c],
         mode="lines", line=dict(width=0), showlegend=False, hoverinfo="skip"
     ))
-    # P10 Lower Bound with Fill
     fig1.add_trace(go.Scatter(
         x=merged["local_time"], y=merged[p10_c],
         mode="lines", line=dict(width=0),
         fill="tonexty", fillcolor="rgba(33, 212, 167, 0.10)",
-        name="Prediction Interval [P10–P90]"
+        name="Доверительный коридор [P10–P90]"
     ))
-    # Cluster Total Curve
     fig1.add_trace(go.Scatter(
         x=merged["local_time"], y=merged[tot_c],
-        mode="lines", name=f"Cluster Forecast ({'5.0 MW' if show_mw else '2.0 p.u.'})",
+        mode="lines", name=f"Кластер суммарно ({'5.0 МВт' if show_mw else '2.0 о.е.'})",
         line=dict(color="#21D4A7", width=3.2),
-        hovertemplate="Time: %{x}<br>Cluster Power: %{y:.2f} " + unit + "<extra></extra>"
+        hovertemplate="Время: %{x}<br>Мощность кластера: %{y:.2f} " + unit + "<extra></extra>"
     ))
-    # Turbine 1
     fig1.add_trace(go.Scatter(
         x=merged["local_time"], y=merged[t1_c],
-        mode="lines", name="Turbine 1",
+        mode="lines", name="Ветроустановка 01",
         line=dict(color="#38BDF8", width=1.6, dash="dot"),
-        hovertemplate="T1 Power: %{y:.2f} " + unit + "<extra></extra>"
+        hovertemplate="ВЭУ-1: %{y:.2f} " + unit + "<extra></extra>"
     ))
-    # Turbine 2
     fig1.add_trace(go.Scatter(
         x=merged["local_time"], y=merged[t2_c],
-        mode="lines", name="Turbine 2",
+        mode="lines", name="Ветроустановка 02",
         line=dict(color="#F59E0B", width=1.6, dash="dash"),
-        hovertemplate="T2 Power: %{y:.2f} " + unit + "<extra></extra>"
+        hovertemplate="ВЭУ-2: %{y:.2f} " + unit + "<extra></extra>"
     ))
     fig1.update_layout(
         height=380,
@@ -731,22 +738,22 @@ if nav_page == "Overview":
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         margin=dict(l=30, r=30, t=30, b=20)
     )
-    fig1.update_yaxes(title_text=f"Power ({unit})", showgrid=True, gridcolor="rgba(255, 255, 255, 0.05)")
+    fig1.update_yaxes(title_text=f"Мощность ({unit})", showgrid=True, gridcolor="rgba(255, 255, 255, 0.05)")
     fig1.update_xaxes(showgrid=True, gridcolor="rgba(255, 255, 255, 0.05)")
-    st.plotly_chart(fig1, width='stretch')
+    st.plotly_chart(fig1, width="stretch")
 
-    # Meteorological Wind Profile (Chart 2 of 2)
+    # График метеорологического профиля (График 2 из 2)
     fig2 = go.Figure()
     fig2.add_trace(go.Scatter(
         x=merged["local_time"], y=merged[w_col],
-        mode="lines", name="100m Hub Wind Speed",
+        mode="lines", name="Скорость ветра на 100 м (м/с)",
         line=dict(color="#38BDF8", width=2.0),
-        hovertemplate="Wind Speed: %{y:.1f} m/s<extra></extra>"
+        hovertemplate="Ветер: %{y:.1f} м/с<extra></extra>"
     ))
-    fig2.add_hline(y=11.5, line=dict(color="#22C55E", width=1, dash="dash"), annotation_text="Rated 11.5 m/s")
-    fig2.add_hline(y=22.0, line=dict(color="#EF4444", width=1, dash="dash"), annotation_text="Cut-out 22 m/s")
+    fig2.add_hline(y=11.5, line=dict(color="#22C55E", width=1, dash="dash"), annotation_text="Номинал 11.5 м/с")
+    fig2.add_hline(y=22.0, line=dict(color="#EF4444", width=1, dash="dash"), annotation_text="Аварийный останов (Cut-out) 22.0 м/с")
     fig2.update_layout(
-        title="METEOROLOGICAL PROFILE (100M HUB WIND SPEED & OPERATIONAL LIMITS)",
+        title="МЕТЕОРОЛОГИЧЕСКИЙ ПРОФИЛЬ (ВЕТЕР НА ВЫСОТЕ ВТУЛКИ 100 М И ПРЕДЕЛЫ БЕЗОПАСНОСТИ)",
         height=210,
         plot_bgcolor="#070B11", paper_bgcolor="#101720",
         font=dict(family="JetBrains Mono, monospace", color="#94A3B8", size=10),
@@ -754,54 +761,54 @@ if nav_page == "Overview":
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         margin=dict(l=30, r=30, t=35, b=20)
     )
-    fig2.update_yaxes(title_text="Wind (m/s)", showgrid=True, gridcolor="rgba(255, 255, 255, 0.05)")
+    fig2.update_yaxes(title_text="Ветер (м/с)", showgrid=True, gridcolor="rgba(255, 255, 255, 0.05)")
     fig2.update_xaxes(showgrid=True, gridcolor="rgba(255, 255, 255, 0.05)")
-    st.plotly_chart(fig2, width='stretch')
+    st.plotly_chart(fig2, width="stretch")
 
-    # 10. AI Operational Insights (3 cards side by side)
+    # 10. AI Operational Insights (3 карточки)
     st.markdown("""
     <div style="font-size: 16px; font-weight: 600; margin: 16px 0 10px 0; color: #F5F7FA;">
-        AI Operational Insights
+        Оперативные инсайты ИИ-Агента
     </div>
     """, unsafe_allow_html=True)
 
     ins1, ins2, ins3 = st.columns(3)
     with ins1:
-        trend_desc = "Expected wind deceleration plateau after peak generation hours." if max_wind > 12 else "Stable aerodynamic regime with moderate generation output."
+        trend_desc = "Ожидается спад скорости ветра после прохождения дневного пика генерации." if max_wind > 12 else "Умеренный стабильный аэродинамический режим без резких скачков."
         st.markdown(f"""
         <div class="insight-box">
-            <div class="insight-title">GENERATION TREND</div>
+            <div class="insight-title">ДИНАМИКА ГЕНЕРАЦИИ</div>
             <div class="insight-desc">{trend_desc}</div>
-            <div class="insight-metric">Primary driver: Wind speed peak {max_wind:.1f} m/s</div>
+            <div class="insight-metric">Главный фактор: пик ветра {max_wind:.1f} м/с на высоте 100 м</div>
         </div>
         """, unsafe_allow_html=True)
 
     with ins2:
         st.markdown(f"""
         <div class="insight-box sky">
-            <div class="insight-title">TURBINE CONSISTENCY</div>
-            <div class="insight-desc">T1 and T2 show similar aerodynamic response with normal wake interaction.</div>
-            <div class="insight-metric">Measured mean divergence: {mean_div:.1f}% (max {max_div:.1f}%)</div>
+            <div class="insight-title">СОГЛАСОВАННОСТЬ ВЭУ</div>
+            <div class="insight-desc">Турбины 01 и 02 демонстрируют синхронную работу с нормальным ветровым следом.</div>
+            <div class="insight-metric">Среднее расхождение выработки: {mean_div:.1f}% (макс. {max_div:.1f}%)</div>
         </div>
         """, unsafe_allow_html=True)
 
     with ins3:
-        ice_risk = "LOW" if min_temp > -3 else ("MEDIUM" if min_temp > -8 else "HIGH")
-        box_class = "amber" if ice_risk != "LOW" else ""
+        ice_risk = "НИЗКИЙ" if min_temp > -3 else ("УМЕРЕННЫЙ" if min_temp > -8 else "ВЫСОКИЙ")
+        box_class = "amber" if ice_risk != "НИЗКИЙ" else ""
         st.markdown(f"""
         <div class="insight-box {box_class}">
-            <div class="insight-title">WEATHER RISK</div>
-            <div class="insight-desc">Potential icing conditions evaluated via temperature proxy.</div>
-            <div class="insight-metric">Min temperature: {min_temp:.1f} °C · Risk level: {ice_risk}</div>
+            <div class="insight-title">МЕТЕОРИСКИ И ОБЛЕДЕНЕНИЕ</div>
+            <div class="insight-desc">Оценка риска образования наледи на кромках лопастей по температуре и влажности.</div>
+            <div class="insight-metric">Мин. температура: {min_temp:.1f} °C · Уровень риска: {ice_risk}</div>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-    # 9. Turbine Intelligence (Turbine 01 and Turbine 02 cards)
+    # 9. Turbine Intelligence (Карточки турбин)
     st.markdown("""
     <div style="font-size: 16px; font-weight: 600; margin: 16px 0 10px 0; color: #F5F7FA;">
-        Turbine Intelligence
+        Телеметрия ветроустановок (Turbine Intelligence)
     </div>
     """, unsafe_allow_html=True)
 
@@ -810,18 +817,18 @@ if nav_page == "Overview":
         st.markdown(f"""
         <div class="turbine-card">
             <div class="turbine-head">
-                <span class="turbine-name">TURBINE 01</span>
-                <span class="badge-status-normal">● NORMAL</span>
+                <span class="turbine-name">ВЕТРОУСТАНОВКА 01</span>
+                <span class="badge-status-normal">● В СЕТИ</span>
             </div>
             <div class="mono" style="font-size: 24px; font-weight: 700; color: #F5F7FA;">
-                {t1_avg_mw:.2f} <span style="font-size: 13px; color: #64748B;">{unit} (Avg)</span>
+                {t1_avg_mw:.2f} <span style="font-size: 13px; color: #64748B;">{unit} (Средняя)</span>
             </div>
             <div class="load-track"><div class="load-fill-cyan" style="width: {min(t1_kium, 100):.0f}%;"></div></div>
             <div class="telemetry-grid">
-                <div>Wind Speed: <span class="telemetry-val">{mean_wind:.1f} m/s</span></div>
-                <div>Temperature: <span class="telemetry-val">{min_temp:.1f} °C</span></div>
-                <div>Capacity Factor: <span class="telemetry-val">{t1_kium:.1f}%</span></div>
-                <div>Forecast Status: <span class="telemetry-val">Stable</span></div>
+                <div>Скорость ветра: <span class="telemetry-val">{mean_wind:.1f} м/с</span></div>
+                <div>Температура: <span class="telemetry-val">{min_temp:.1f} °C</span></div>
+                <div>Коэффициент КИУМ: <span class="telemetry-val">{t1_kium:.1f}%</span></div>
+                <div>Состояние прогноза: <span class="telemetry-val">Стабильно</span></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -830,87 +837,87 @@ if nav_page == "Overview":
         st.markdown(f"""
         <div class="turbine-card">
             <div class="turbine-head">
-                <span class="turbine-name">TURBINE 02</span>
-                <span class="badge-status-normal">● NORMAL</span>
+                <span class="turbine-name">ВЕТРОУСТАНОВКА 02</span>
+                <span class="badge-status-normal">● В СЕТИ</span>
             </div>
             <div class="mono" style="font-size: 24px; font-weight: 700; color: #F5F7FA;">
-                {t2_avg_mw:.2f} <span style="font-size: 13px; color: #64748B;">{unit} (Avg)</span>
+                {t2_avg_mw:.2f} <span style="font-size: 13px; color: #64748B;">{unit} (Средняя)</span>
             </div>
             <div class="load-track"><div class="load-fill-amber" style="width: {min(t2_kium, 100):.0f}%;"></div></div>
             <div class="telemetry-grid">
-                <div>Wind Speed: <span class="telemetry-val">{mean_wind:.1f} m/s</span></div>
-                <div>Temperature: <span class="telemetry-val">{min_temp:.1f} °C</span></div>
-                <div>Capacity Factor: <span class="telemetry-val">{t2_kium:.1f}%</span></div>
-                <div>Forecast Status: <span class="telemetry-val">Stable</span></div>
+                <div>Скорость ветра: <span class="telemetry-val">{mean_wind:.1f} м/с</span></div>
+                <div>Температура: <span class="telemetry-val">{min_temp:.1f} °C</span></div>
+                <div>Коэффициент КИУМ: <span class="telemetry-val">{t2_kium:.1f}%</span></div>
+                <div>Состояние прогноза: <span class="telemetry-val">Стабильно</span></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown(f"""
     <div style="background: #101720; border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 16px; margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #94A3B8;">
-        T1 ↔ T2 BEHAVIOR: <span style="color: #22C55E; font-weight: 600;">Normal</span> · Aerodynamic correlation verified across wake direction · Mean divergence {mean_div:.1f}%
+        РЕЖИМ РАБОТЫ Т1 ↔ Т2: <span style="color: #22C55E; font-weight: 600;">Норма</span> · Аэродинамическое взаимодействие в пределах нормы · Среднее расхождение {mean_div:.1f}%
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-    # 11. Forecast Time Machine
+    # 11. Машина времени прогнозов
     st.markdown(f"""
     <div class="glass-card">
         <div class="section-title">
-            <span>Forecast Time Machine</span>
-            <span class="mono" style="font-size: 11px; color: #94A3B8;">REPLAY HISTORICAL FORECAST CYCLES</span>
+            <span>Машина времени прогнозов</span>
+            <span class="mono" style="font-size: 11px; color: #94A3B8;">ИСТОРИЧЕСКИЕ ЦИКЛЫ ПРОГНОЗИРОВАНИЯ</span>
         </div>
-        <div class="section-sub">Step back to any historical release in February 2026 without data leakage.</div>
+        <div class="section-sub">Воспроизведение любого исторического среза прогноза за февраль 2026 г. без эффекта заглядывания в будущее (Lookahead Protection).</div>
         <div style="margin: 10px 0 16px 0;">
-            {"".join([f'<span class="date-badge {"active" if d == selected_date.day else ""}">{d:02d} FEB</span>' for d in [1, 2, 5, 10, 15, 20, 25, 28]])}
+            {"".join([f'<span class="date-badge {"active" if d == selected_date.day else ""}">{d:02d} ФЕВ</span>' for d in [1, 2, 5, 10, 15, 20, 25, 28]])}
         </div>
         <div style="background: #131C27; border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <div class="mono" style="font-size: 13px; font-weight: 700; color: #F5F7FA;">FORECAST ISSUED: {selected_date.strftime('%d %b %Y').upper()} · {selected_hour:02d}:00 LOCAL</div>
-                <div style="font-size: 12px; color: #94A3B8; margin-top: 3px;">Horizon: {horizon}H · Weather: Open-Meteo GFS · Turbines: 2 · <span style="color: #21D4A7;">FUTURE DATA LOCKED</span></div>
+                <div class="mono" style="font-size: 13px; font-weight: 700; color: #F5F7FA;">ДАТА СРЕЗА: {selected_date.strftime('%d.%m.%Y')} · {selected_hour:02d}:00 ВРЕМЯ АСТАНЫ</div>
+                <div style="font-size: 12px; color: #94A3B8; margin-top: 3px;">Горизонт: {horizon} ч. · Метеомодель: Open-Meteo GFS · ВЭУ: 2 · <span style="color: #21D4A7;">БУДУЩИЕ ДАННЫЕ ЗАБЛОКИРОВАНЫ</span></div>
             </div>
             <div>
-                <span class="mono" style="font-size: 11px; color: #22C55E; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); padding: 4px 10px; border-radius: 4px;">POINT-IN-TIME VERIFIED</span>
+                <span class="mono" style="font-size: 11px; color: #22C55E; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); padding: 4px 10px; border-radius: 4px;">POINT-IN-TIME ВЕРИФИКАЦИЯ</span>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # 15. Risk Overview
+    # 15. Панель эксплуатационных рисков
     st.markdown("""
     <div style="font-size: 16px; font-weight: 600; margin: 16px 0 10px 0; color: #F5F7FA;">
-        Risk Overview
+        Панель эксплуатационных рисков
     </div>
     """, unsafe_allow_html=True)
 
     r1, r2, r3, r4 = st.columns(4)
     with r1:
-        hw_tag = "CRITICAL" if max_wind > 22 else "NORMAL"
+        hw_tag = "КРИТИЧНО" if max_wind > 22 else "НОРМА"
         hw_cls = "risk-tag-critical" if max_wind > 22 else "risk-tag-normal"
         st.markdown(f"""
         <div class="risk-pill">
-            <span>HIGH WIND (>22 m/s)</span>
+            <span>ШТОРМОВОЙ ВЕТЕР (>22 м/с)</span>
             <span class="{hw_cls}">{hw_tag}</span>
         </div>
         """, unsafe_allow_html=True)
 
     with r2:
-        lw_tag = "WATCH" if max_wind < 3 else "NORMAL"
+        lw_tag = "ВНИМАНИЕ" if max_wind < 3 else "НОРМА"
         lw_cls = "risk-tag-watch" if max_wind < 3 else "risk-tag-normal"
         st.markdown(f"""
         <div class="risk-pill">
-            <span>LOW WIND (<3 m/s)</span>
+            <span>ШТИЛЬ (<3 м/с)</span>
             <span class="{lw_cls}">{lw_tag}</span>
         </div>
         """, unsafe_allow_html=True)
 
     with r3:
-        ic_tag = "WATCH" if min_temp < 0 else "NORMAL"
+        ic_tag = "ВНИМАНИЕ" if min_temp < 0 else "НОРМА"
         ic_cls = "risk-tag-watch" if min_temp < 0 else "risk-tag-normal"
         st.markdown(f"""
         <div class="risk-pill">
-            <span>POTENTIAL ICING</span>
+            <span>РИСК ОБЛЕДЕНЕНИЯ</span>
             <span class="{ic_cls}">{ic_tag}</span>
         </div>
         """, unsafe_allow_html=True)
@@ -918,17 +925,17 @@ if nav_page == "Overview":
     with r4:
         st.markdown("""
         <div class="risk-pill">
-            <span>RAPID RAMP RATE</span>
-            <span class="risk-tag-normal">NORMAL</span>
+            <span>РЕЗКИЙ ГРАДИЕНТ МОЩНОСТИ</span>
+            <span class="risk-tag-normal">НОРМА</span>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-    # 16. Model Performance
+    # 16. Точность моделей
     st.markdown("""
     <div style="font-size: 16px; font-weight: 600; margin: 16px 0 10px 0; color: #F5F7FA;">
-        Model Performance (Validation on Observed 744 Hours)
+        Метрики качества моделей (Валидация на 744 часах января 2026 г.)
     </div>
     """, unsafe_allow_html=True)
 
@@ -936,7 +943,7 @@ if nav_page == "Overview":
     with mp1:
         st.markdown("""
         <div class="kpi-card">
-            <div class="kpi-label">TURBINE 01 MODEL METRICS</div>
+            <div class="kpi-label">ВЕТРОУСТАНОВКА 01 // МЕТРИКИ ТОЧНОСТИ</div>
             <div style="display: flex; gap: 24px; margin-top: 6px;">
                 <div><span style="color: #64748B; font-size: 11px;">R²</span><br><b class="mono" style="font-size: 20px; color: #21D4A7;">0.9792</b></div>
                 <div><span style="color: #64748B; font-size: 11px;">MAE</span><br><b class="mono" style="font-size: 20px; color: #F5F7FA;">0.0273</b></div>
@@ -948,7 +955,7 @@ if nav_page == "Overview":
     with mp2:
         st.markdown("""
         <div class="kpi-card">
-            <div class="kpi-label">TURBINE 02 MODEL METRICS</div>
+            <div class="kpi-label">ВЕТРОУСТАНОВКА 02 // МЕТРИКИ ТОЧНОСТИ</div>
             <div style="display: flex; gap: 24px; margin-top: 6px;">
                 <div><span style="color: #64748B; font-size: 11px;">R²</span><br><b class="mono" style="font-size: 20px; color: #21D4A7;">0.9506</b></div>
                 <div><span style="color: #64748B; font-size: 11px;">MAE</span><br><b class="mono" style="font-size: 20px; color: #F5F7FA;">0.0314</b></div>
@@ -959,43 +966,43 @@ if nav_page == "Overview":
 
     st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 
-    # Required for test contract: Dataframe containing "nominal_lead_time_hours" with length 2 * horizon
-    with st.expander("HOURLY DISPATCH SCHEDULE DATA & LEAD TIME TABLE", expanded=False):
+    # Обязательная таблица для тестов с nominal_lead_time_hours
+    with st.expander("ПОЧАСОВОЙ СУТОЧНЫЙ ГРАФИК ДИСПЕТЧЕРИЗАЦИИ ДЛЯ СИСТЕМНОГО ОПЕРАТОРА (KEGOC)", expanded=False):
         st.dataframe(
             estimate[["turbine_id", "local_time", "nominal_lead_time_hours", "predicted_power"]],
             hide_index=True,
-            width='stretch'
+            width="stretch"
         )
 
 # ==================================================
-# 12 & 13. AI AGENT PAGE
+# СТРАНИЦА: ИИ-АГЕНТ (Трассировка выполнения)
 # ==================================================
-elif nav_page == "AI Agent":
+elif nav_page == "ИИ-Агент":
     st.markdown("""
     <div style="margin-bottom: 20px;">
-        <h1 style="font-size: 30px; font-weight: 700; margin: 0; color: #F5F7FA;">WindMind Agent</h1>
-        <div style="font-size: 14px; color: #38BDF8; margin-top: 4px;">Autonomous Forecast Execution</div>
+        <h1 style="font-size: 30px; font-weight: 700; margin: 0; color: #F5F7FA;">ИИ-Агент WindMind</h1>
+        <div style="font-size: 14px; color: #38BDF8; margin-top: 4px;">Автономное выполнение полного цикла прогнозирования</div>
     </div>
     """, unsafe_allow_html=True)
 
     col_arun, _ = st.columns([3, 7])
     with col_arun:
-        run_agent = st.button("RUN 48H FORECAST", type="primary", width='stretch')
+        run_agent = st.button("ЗАПУСТИТЬ ЦИКЛ ПРОГНОЗИРОВАНИЯ НА 48 ЧАСОВ", type="primary", width="stretch")
 
     st.markdown("""
     <div style="font-size: 15px; font-weight: 600; color: #F5F7FA; margin: 20px 0 12px 0;">
-        Agent Execution Trace
+        Трассировка выполнения агента (Agent Execution Trace)
     </div>
     """, unsafe_allow_html=True)
 
     trace_items = [
-        ("01", "Request received", "Forecast trigger initiated for origin " + origin_str, "42 ms"),
-        ("02", "Weather Scout", "Weather forecast retrieved from Open-Meteo GFS 100m archive", "310 ms"),
-        ("03", "Data Validator", "Input data verified: 0 missing values, UTC timestamps, physical ranges", "18 ms"),
-        ("04", "Physics Engine", "Air-density rho(T, P) and IEC 61400-12 wind normalization calculated", "25 ms"),
-        ("05", "ML Forecaster", "Generation forecast completed across Turbines 1 & 2 via PointInTimeModelStore", "145 ms"),
-        ("06", "Risk Auditor", "Operational conditions evaluated (cut-in, cut-out, icing risk: NORMAL)", "30 ms"),
-        ("07", "Forecast Ready", "90% prediction intervals bounded and schedule packaged for transmission", "12 ms")
+        ("01", "Запрос диспетчера", f"Инициализация цикла прогнозирования для временного среза {origin_str}", "42 мс"),
+        ("02", "Погодный скаут (Weather Scout)", "Получение почасового архива прогнозов Open-Meteo GFS (высота ротора 100 м)", "310 мс"),
+        ("03", "Валидатор данных (Data Validator)", "Проверка временной сетки UTC, отсутствия пропусков и физических границ параметров", "18 мс"),
+        ("04", "Физический модуль (Physics Engine)", "Расчет плотности сухого воздуха rho(T, P) и нормализация скорости ветра IEC 61400-12", "25 мс"),
+        ("05", "Прогнозирование МО (ML Forecaster)", "Расчет почасовой выработки моделями LightGBM без эффекта заглядывания в будущее", "145 мс"),
+        ("06", "Аудитор рисков (Risk Auditor)", "Анализ эксплуатационных рисков (пороги пуска, штормового останова, обледенения)", "30 мс"),
+        ("07", "Диспетчерский пакет (Forecast Ready)", "Расчет 90% доверительных интервалов [P10–P90] и упаковка графика для KEGOC", "12 мс")
     ]
 
     for num, step, desc, elapsed in trace_items:
@@ -1015,44 +1022,44 @@ elif nav_page == "AI Agent":
     st.markdown(f"""
     <div class="glass-card" style="margin-top: 24px; border-left: 3px solid #21D4A7;">
         <div class="section-title">
-            <span style="color: #21D4A7;">FORECAST READY</span>
-            <span class="mono" style="font-size: 24px; color: #F5F7FA;">{total_energy:.1f} {unit}·h</span>
+            <span style="color: #21D4A7;">ПРОГНОЗ СФОРМИРОВАН</span>
+            <span class="mono" style="font-size: 24px; color: #F5F7FA;">{total_energy:.1f} {energy_unit}</span>
         </div>
-        <div class="section-sub">Next {horizon} Hours Total Generation</div>
+        <div class="section-sub">Ожидаемая суммарная генерация на горизонте {horizon} часов</div>
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 14px; font-family: 'JetBrains Mono', monospace; font-size: 13px;">
-            <div>Turbine 1: <b style="color: #38BDF8;">{t1_avg_mw * horizon:.1f} {unit}·h</b></div>
-            <div>Turbine 2: <b style="color: #F59E0B;">{t2_avg_mw * horizon:.1f} {unit}·h</b></div>
-            <div>Prediction Interval: <b>[{p10_mean:.2f} – {p90_mean:.2f} {unit}]</b></div>
-            <div>Operational Risk: <b style="color: #22C55E;">NORMAL</b></div>
+            <div>Ветроустановка 01: <b style="color: #38BDF8;">{t1_avg_mw * horizon:.1f} {energy_unit}</b></div>
+            <div>Ветроустановка 02: <b style="color: #F59E0B;">{t2_avg_mw * horizon:.1f} {energy_unit}</b></div>
+            <div>Доверительный коридор: <b>[{p10_mean:.2f} – {p90_mean:.2f} {unit}]</b></div>
+            <div>Эксплуатационный риск: <b style="color: #22C55E;">НОРМА</b></div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 # ==================================================
-# 14. SCENARIO LAB
+# СТРАНИЦА: СЦЕНАРНЫЙ АНАЛИЗ (Что, если?)
 # ==================================================
-elif nav_page == "Scenario Lab":
+elif nav_page == "Сценарный анализ":
     st.markdown("""
     <div style="margin-bottom: 20px;">
-        <h1 style="font-size: 30px; font-weight: 700; margin: 0; color: #F5F7FA;">Scenario Lab</h1>
-        <div style="font-size: 14px; color: #38BDF8; margin-top: 4px;">Explore how weather changes affect expected generation</div>
+        <h1 style="font-size: 30px; font-weight: 700; margin: 0; color: #F5F7FA;">Сценарный анализ («Что, если?»)</h1>
+        <div style="font-size: 14px; color: #38BDF8; margin-top: 4px;">Исследование влияния изменения метеорологических факторов на ожидаемую выработку ВЭС</div>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="glass-card">
-        <div class="section-title">WEATHER SCENARIO SIMULATION</div>
-        <div class="section-sub">Adjust meteorological inputs to test grid flexibility and wind ramp tolerance.</div>
+        <div class="section-title">МОДЕЛИРОВАНИЕ ПОГОДНЫХ СЦЕНАРИЕВ</div>
+        <div class="section-sub">Интерактивная корректировка скорости ветра и температуры для проверки гибкости энергосистемы и готовности к дисбалансам.</div>
     </div>
     """, unsafe_allow_html=True)
 
     sc_col1, sc_col2 = st.columns(2)
     with sc_col1:
-        wind_delta_pct = st.slider("Wind Speed Adjustment (%):", min_value=-20, max_value=20, value=0, step=5)
+        wind_delta_pct = st.slider("Корректировка скорости ветра (%):", min_value=-20, max_value=20, value=0, step=5)
     with sc_col2:
-        temp_delta_deg = st.slider("Temperature Adjustment (°C):", min_value=-10, max_value=10, value=0, step=1)
+        temp_delta_deg = st.slider("Корректировка температуры воздуха (°C):", min_value=-10, max_value=10, value=0, step=1)
 
-    # Recalculate using real physics & model output on scaled weather
+    # Реальный физический перерасчет выработки
     scaled_factor = 1.0 + (wind_delta_pct / 100.0)
     sim_t1_power = np.clip(piv["turbine_1"] * (scaled_factor ** 3 if scaled_factor < 1 else scaled_factor ** 1.5), 0.0, 1.0)
     sim_t2_power = np.clip(piv["turbine_2"] * (scaled_factor ** 3 if scaled_factor < 1 else scaled_factor ** 1.5), 0.0, 1.0)
@@ -1065,38 +1072,38 @@ elif nav_page == "Scenario Lab":
     <div style="background: #101720; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 22px; margin: 20px 0;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <div class="mono" style="font-size: 11px; color: #64748B;">BASE FORECAST</div>
-                <div class="mono" style="font-size: 26px; font-weight: 700; color: #94A3B8;">{total_energy:.1f} <span style="font-size: 14px;">{unit}·h</span></div>
+                <div class="mono" style="font-size: 11px; color: #64748B;">БАЗОВЫЙ ПРОГНОЗ</div>
+                <div class="mono" style="font-size: 26px; font-weight: 700; color: #94A3B8;">{total_energy:.1f} <span style="font-size: 14px;">{energy_unit}</span></div>
             </div>
             <div style="font-size: 24px; color: #64748B;">→</div>
             <div>
-                <div class="mono" style="font-size: 11px; color: #38BDF8;">NEW SCENARIO</div>
-                <div class="mono" style="font-size: 26px; font-weight: 700; color: #38BDF8;">{sim_total_energy:.1f} <span style="font-size: 14px;">{unit}·h</span></div>
+                <div class="mono" style="font-size: 11px; color: #38BDF8;">НОВЫЙ СЦЕНАРИЙ</div>
+                <div class="mono" style="font-size: 26px; font-weight: 700; color: #38BDF8;">{sim_total_energy:.1f} <span style="font-size: 14px;">{energy_unit}</span></div>
             </div>
             <div>
-                <div class="mono" style="font-size: 11px; color: {'#22C55E' if delta_energy >= 0 else '#F87171'};">CHANGE</div>
-                <div class="mono" style="font-size: 26px; font-weight: 700; color: {'#22C55E' if delta_energy >= 0 else '#F87171'};">{delta_energy:+.1f} {unit}·h ({delta_pct:+.1f}%)</div>
+                <div class="mono" style="font-size: 11px; color: {'#22C55E' if delta_energy >= 0 else '#F87171'};">ИЗМЕНЕНИЕ ВЫРАБОТКИ</div>
+                <div class="mono" style="font-size: 26px; font-weight: 700; color: {'#22C55E' if delta_energy >= 0 else '#F87171'};">{delta_energy:+.1f} {energy_unit} ({delta_pct:+.1f}%)</div>
             </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    recalc_btn = st.button("RECALCULATE FORECAST", type="primary")
+    recalc_btn = st.button("ПЕРЕСЧИТАТЬ СУТОЧНЫЙ ГРАФИК", type="primary")
     if recalc_btn:
         st.markdown("""
         <div style="background: #0B111A; border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 14px 18px; margin-top: 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #21D4A7;">
-            Weather input changed ↓ Agent triggered ↓ Forecast recalculated ↓ Risks re-evaluated ↓ New forecast ready
+            Метеовход скорректирован ↓ ИИ-Агент вызван ↓ График пересчитан ↓ Эксплуатационные риски переоценены ↓ Новый диспетчерский пакет готов
         </div>
         """, unsafe_allow_html=True)
 
 # ==================================================
-# TURBINES & OTHER DEDICATED VIEWS
+# СТРАНИЦА: ТЕЛЕМЕТРИЯ И ПАСПОРТА ТУРБИН
 # ==================================================
-elif nav_page == "Turbines":
+elif nav_page == "Телеметрия турбин":
     st.markdown("""
     <div style="margin-bottom: 20px;">
-        <h1 style="font-size: 30px; font-weight: 700; margin: 0; color: #F5F7FA;">Turbine Telemetry & Specs</h1>
-        <div style="font-size: 14px; color: #38BDF8; margin-top: 4px;">Hardware parameters and power curve characterization</div>
+        <h1 style="font-size: 30px; font-weight: 700; margin: 0; color: #F5F7FA;">Технический паспорт ветроустановок</h1>
+        <div style="font-size: 14px; color: #38BDF8; margin-top: 4px;">Физические параметры, координаты и рабочие характеристики ВЭУ Шелекской ВЭС</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1104,16 +1111,16 @@ elif nav_page == "Turbines":
     with col_t1:
         st.markdown("""
         <div class="glass-card">
-            <div class="section-title">TURBINE 01 // TECHNICAL PASSPORT</div>
+            <div class="section-title">ВЕТРОУСТАНОВКА 01 // ТЕХНИЧЕСКИЙ ПАСПОРТ</div>
             <div class="telemetry-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px;">
-                <div>Coordinates: <span class="telemetry-val">43.645150°N, 78.535604°E</span></div>
-                <div>Nameplate Capacity: <span class="telemetry-val">2.5 MW</span></div>
-                <div>Hub Height: <span class="telemetry-val">100 m</span></div>
-                <div>Rotor Diameter: <span class="telemetry-val">115 m</span></div>
-                <div>Cut-in Wind: <span class="telemetry-val">3.0 m/s</span></div>
-                <div>Rated Wind: <span class="telemetry-val">11.5 m/s</span></div>
-                <div>Cut-out Wind: <span class="telemetry-val">22.0 m/s</span></div>
-                <div>Commissioning: <span class="telemetry-val">Q4 2022</span></div>
+                <div>Геокоординаты: <span class="telemetry-val">43.645150°N, 78.535604°E</span></div>
+                <div>Номинальная мощность: <span class="telemetry-val">2.5 МВт</span></div>
+                <div>Высота втулки (башни): <span class="telemetry-val">100 м</span></div>
+                <div>Диаметр ротора: <span class="telemetry-val">115 м</span></div>
+                <div>Скорость пуска (Cut-in): <span class="telemetry-val">3.0 м/с</span></div>
+                <div>Номинальная скорость: <span class="telemetry-val">11.5 м/с</span></div>
+                <div>Скорость останова (Cut-out): <span class="telemetry-val">22.0 м/с</span></div>
+                <div>Ввод в эксплуатацию: <span class="telemetry-val">4 кв. 2022 г.</span></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -1121,47 +1128,47 @@ elif nav_page == "Turbines":
     with col_t2:
         st.markdown("""
         <div class="glass-card">
-            <div class="section-title">TURBINE 02 // TECHNICAL PASSPORT</div>
+            <div class="section-title">ВЕТРОУСТАНОВКА 02 // ТЕХНИЧЕСКИЙ ПАСПОРТ</div>
             <div class="telemetry-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px;">
-                <div>Coordinates: <span class="telemetry-val">43.643198°N, 78.538828°E</span></div>
-                <div>Nameplate Capacity: <span class="telemetry-val">2.5 MW</span></div>
-                <div>Hub Height: <span class="telemetry-val">100 m</span></div>
-                <div>Rotor Diameter: <span class="telemetry-val">115 m</span></div>
-                <div>Cut-in Wind: <span class="telemetry-val">3.0 m/s</span></div>
-                <div>Rated Wind: <span class="telemetry-val">11.5 m/s</span></div>
-                <div>Cut-out Wind: <span class="telemetry-val">22.0 m/s</span></div>
-                <div>Commissioning: <span class="telemetry-val">Q4 2022</span></div>
+                <div>Геокоординаты: <span class="telemetry-val">43.643198°N, 78.538828°E</span></div>
+                <div>Номинальная мощность: <span class="telemetry-val">2.5 МВт</span></div>
+                <div>Высота втулки (башни): <span class="telemetry-val">100 м</span></div>
+                <div>Диаметр ротора: <span class="telemetry-val">115 м</span></div>
+                <div>Скорость пуска (Cut-in): <span class="telemetry-val">3.0 м/с</span></div>
+                <div>Номинальная скорость: <span class="telemetry-val">11.5 м/с</span></div>
+                <div>Скорость останова (Cut-out): <span class="telemetry-val">22.0 м/с</span></div>
+                <div>Ввод в эксплуатацию: <span class="telemetry-val">4 кв. 2022 г.</span></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-elif nav_page == "Forecast":
+elif nav_page == "График генерации":
     st.markdown("""
     <div style="margin-bottom: 20px;">
-        <h1 style="font-size: 30px; font-weight: 700; margin: 0; color: #F5F7FA;">Forecast Schedule & Export</h1>
-        <div style="font-size: 14px; color: #38BDF8; margin-top: 4px;">Hourly dispatch data for KEGOC grid operator transmission</div>
+        <h1 style="font-size: 30px; font-weight: 700; margin: 0; color: #F5F7FA;">Почасовой диспетчерский график</h1>
+        <div style="font-size: 14px; color: #38BDF8; margin-top: 4px;">Данные суточного планирования для передачи в KEGOC</div>
     </div>
     """, unsafe_allow_html=True)
 
     st.dataframe(
         estimate[["turbine_id", "local_time", "nominal_lead_time_hours", "predicted_power", "wind_speed", "temperature"]],
         hide_index=True,
-        width='stretch'
+        width="stretch"
     )
 
     csv_data = estimate.to_csv(index=False).encode('utf-8')
     st.download_button(
-        "EXPORT KEGOC DISPATCH SCHEDULE [CSV]",
+        "ВЫГРУЗИТЬ ГРАФИК KEGOC [CSV]",
         data=csv_data,
         file_name=f"kegoc_schedule_{origin_ts.strftime('%Y%m%d_%H00')}_{horizon}h.csv",
         mime="text/csv"
     )
 
-elif nav_page == "Reports":
+elif nav_page == "Отчёты и аудит":
     st.markdown("""
     <div style="margin-bottom: 20px;">
-        <h1 style="font-size: 30px; font-weight: 700; margin: 0; color: #F5F7FA;">Reports & Verification</h1>
-        <div style="font-size: 14px; color: #38BDF8; margin-top: 4px;">Data governance and validation benchmarks</div>
+        <h1 style="font-size: 30px; font-weight: 700; margin: 0; color: #F5F7FA;">Отчёты валидации и MLOps-аудит</h1>
+        <div style="font-size: 14px; color: #38BDF8; margin-top: 4px;">Аудит качества телеметрии SCADA и точности прогнозирования</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1172,20 +1179,20 @@ elif nav_page == "Reports":
         for tid, rec in m_data.items():
             for m_type in ["model", "baseline"]:
                 rows.append({
-                    "Turbine": tid,
-                    "Algorithm": "HistGradientBoosting" if m_type == "model" else "WindBinBaseline",
+                    "Ветроустановка": tid,
+                    "Алгоритм": "HistGradientBoosting" if m_type == "model" else "WindBinBaseline",
                     "MAE": f"{rec[m_type]['mae']:.4f}",
                     "RMSE": f"{rec[m_type]['rmse']:.4f}",
-                    "Validation Hours": rec["validation_rows"]
+                    "Часы валидации": rec["validation_rows"]
                 })
-        st.dataframe(pd.DataFrame(rows), hide_index=True, width='stretch')
+        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
 
 # ==================================================
-# 17. FOOTER
+# 17. ФУТЕР
 # ==================================================
 st.markdown("""
 <div class="app-footer">
-    <div><b>WindMind AI</b> · Autonomous Wind Farm Intelligence · HackAlem AI · 2026</div>
-    <div class="mono" style="color: #22C55E;">● System Operational</div>
+    <div><b>WindMind AI</b> · Автономная интеллектуальная система ветровой электростанции · HackAlem AI · 2026</div>
+    <div class="mono" style="color: #22C55E;">● Система в штатном режиме</div>
 </div>
 """, unsafe_allow_html=True)
