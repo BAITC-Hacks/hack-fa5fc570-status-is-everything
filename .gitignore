@@ -1,4 +1,5 @@
 .venv/
+.venv-weather/
 __pycache__/
 *.py[cod]
 *$py.class
