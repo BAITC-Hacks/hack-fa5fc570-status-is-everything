@@ -5,7 +5,7 @@
 
 ## Windows PowerShell
 
-Python 3.12 (проверено):
+Python 3.12. (проверено):
 
 ```powershell
 python -m venv .venv
