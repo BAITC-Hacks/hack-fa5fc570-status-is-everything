@@ -103,7 +103,15 @@ st.markdown(f"""
     [data-testid="stSidebar"] {{
         background-color: #0B111A !important;
         border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
-        padding-top: 1.2rem;
+        padding-top: 0 !important;
+    }}
+    
+    /* Убираем гигантский отступ сверху над заголовком WindMind AI */
+    [data-testid="stSidebar"] > div:first-child,
+    [data-testid="stSidebarContent"],
+    [data-testid="stSidebarUserContent"],
+    [data-testid="stSidebar"] .block-container {{
+        padding-top: 1rem !important;
     }}
     
     [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
@@ -111,8 +119,10 @@ st.markdown(f"""
     }}
     
     .sidebar-header {{
-        padding: 0 0 16px 0;
+        padding: 0 0 14px 0;
         border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        margin-bottom: 14px;
+    }}
         margin-bottom: 16px;
     }}
     .sidebar-title {{
@@ -794,21 +804,62 @@ if nav_page == "Обзор системы":
     fig2.update_xaxes(showgrid=True, gridcolor="rgba(255, 255, 255, 0.05)")
     st.plotly_chart(fig2, width="stretch")
 
-    # 10. AI Operational Insights (3 карточки)
+    # 10. AI Operational Insights (Динамический расчет на основе временного ряда)
     st.markdown("""
     <div style="font-size: 16px; font-weight: 600; margin: 16px 0 10px 0; color: #F5F7FA;">
         Оперативные инсайты ИИ-Агента
     </div>
     """, unsafe_allow_html=True)
 
+    peak_idx = merged[tot_c].idxmax()
+    peak_time_obj = merged.loc[peak_idx, "local_time"]
+    peak_hr_str = peak_time_obj.strftime("%H:00")
+    min_w = float(merged[w_col].min())
+    max_w = float(merged[w_col].max())
+    p_start = float(merged[tot_c].iloc[0])
+    p_end = float(merged[tot_c].iloc[-1])
+
+    # Динамический расчет инсайта по тренду выработки
+    if max_w >= 20.0:
+        trend_desc = f"Штормовое предупреждение: пик ветра {max_w:.1f} м/с в {peak_hr_str} приближается к аварийной отсечке (Cut-out 22 м/с). Возможен аварийный сброс нагрузки."
+    elif max_w >= 11.5:
+        trend_desc = f"Выход на номинал: в {peak_hr_str} ожидается выход на полку максимальной мощности ({peak_power:.2f} {unit}) при ветре {max_w:.1f} м/с, со спадом к концу периода до {p_end:.2f} {unit}."
+    elif min_w < 3.0:
+        trend_desc = f"Штилевой интервал: падение скорости ветра до {min_w:.1f} м/с (ниже порога пуска 3.0 м/с). Пиковая мощность кластера составит лишь {peak_power:.2f} {unit}."
+    elif p_end > p_start + 0.4:
+        trend_desc = f"Восходящий ветровой тренд: рост генерации от начальных {p_start:.2f} {unit} к пику {peak_power:.2f} {unit} в {peak_hr_str}."
+    else:
+        trend_desc = f"Нисходящий тренд: прохождение пика {peak_power:.2f} {unit} в {peak_hr_str} с постепенным затуханием ветра до {min_w:.1f} м/с к завершению горизонта."
+
+    # Динамический расчет согласованности ВЭУ
+    if mean_div < 3.0:
+        div_desc = f"Высокая синхронность: среднее расхождение всего {mean_div:.1f}% (макс. {max_div:.1f}%). Аэродинамическое затенение между ВЭУ-01 и ВЭУ-02 минимально."
+    elif mean_div < 6.5:
+        div_desc = f"Штатный ветровой след: разница выработки {mean_div:.1f}%. Наветренная турбина эффективно принимает фронт, следовая диссипация в норме."
+    else:
+        div_desc = f"Выраженная асимметрия потока: дельта достигает {max_div:.1f}% (средняя {mean_div:.1f}%). Рекомендуется контроль аэродинамической нагрузки подветренной ВЭУ."
+
+    # Динамический расчет риска обледенения
+    if min_temp >= 0:
+        ice_desc = f"Обледенение исключено: положительная температура воздуха (минимум +{min_temp:.1f} °C). Поверхность лопастей свободна от ледяных отложений."
+        ice_risk = "ОТСУТСТВУЕТ"
+        box_class = ""
+    elif min_temp >= -4:
+        ice_desc = f"Умеренный риск наледи: переход через 0°C (минимум {min_temp:.1f} °C). Возможно образование микропленки изморози в предрассветные часы."
+        ice_risk = "УМЕРЕННЫЙ"
+        box_class = "amber"
+    else:
+        ice_desc = f"Высокий риск обледенения: устойчивый мороз ({min_temp:.1f} °C) при зимнем ветровом потоке. Необходим мониторинг аэродинамического профиля лопастей."
+        ice_risk = "ВЫСОКИЙ"
+        box_class = "amber"
+
     ins1, ins2, ins3 = st.columns(3)
     with ins1:
-        trend_desc = "Ожидается спад скорости ветра после прохождения дневного пика генерации." if max_wind > 12 else "Умеренный стабильный аэродинамический режим без резких скачков."
         st.markdown(f"""
         <div class="insight-box">
             <div class="insight-title">ДИНАМИКА ГЕНЕРАЦИИ</div>
             <div class="insight-desc">{trend_desc}</div>
-            <div class="insight-metric">Главный фактор: пик ветра {max_wind:.1f} м/с на высоте 100 м</div>
+            <div class="insight-metric">Главный фактор: пик ветра {max_w:.1f} м/с в {peak_hr_str} на 100 м</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -816,18 +867,16 @@ if nav_page == "Обзор системы":
         st.markdown(f"""
         <div class="insight-box sky">
             <div class="insight-title">СОГЛАСОВАННОСТЬ ВЭУ</div>
-            <div class="insight-desc">Турбины 01 и 02 демонстрируют синхронную работу с нормальным ветровым следом.</div>
+            <div class="insight-desc">{div_desc}</div>
             <div class="insight-metric">Среднее расхождение выработки: {mean_div:.1f}% (макс. {max_div:.1f}%)</div>
         </div>
         """, unsafe_allow_html=True)
 
     with ins3:
-        ice_risk = "НИЗКИЙ" if min_temp > -3 else ("УМЕРЕННЫЙ" if min_temp > -8 else "ВЫСОКИЙ")
-        box_class = "amber" if ice_risk != "НИЗКИЙ" else ""
         st.markdown(f"""
         <div class="insight-box {box_class}">
             <div class="insight-title">МЕТЕОРИСКИ И ОБЛЕДЕНЕНИЕ</div>
-            <div class="insight-desc">Оценка риска образования наледи на кромках лопастей по температуре и влажности.</div>
+            <div class="insight-desc">{ice_desc}</div>
             <div class="insight-metric">Мин. температура: {min_temp:.1f} °C · Уровень риска: {ice_risk}</div>
         </div>
         """, unsafe_allow_html=True)
