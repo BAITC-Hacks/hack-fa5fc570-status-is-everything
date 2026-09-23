@@ -38,16 +38,45 @@ st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-    /* Скрытие кнопки Deploy и системного тулбара Streamlit */
+    /* Скрытие кнопки Deploy и меню, сохраняя кнопку открытия боковой панели */
+    header[data-testid="stHeader"] {{
+        background: transparent !important;
+        height: 2.8rem !important;
+        z-index: 99999 !important;
+    }}
+    
     [data-testid="stDeployButton"], 
     .stDeployButton, 
-    [data-testid="stToolbar"], 
-    header[data-testid="stHeader"],
+    [data-testid="stToolbarActions"],
     #MainMenu, 
     footer {{
         display: none !important;
         visibility: hidden !important;
-        height: 0 !important;
+    }}
+
+    /* Кнопка повторного открытия боковой панели (всегда видна и доступна при сворачивании) */
+    [data-testid="stSidebarCollapsedControl"] {{
+        display: flex !important;
+        visibility: visible !important;
+        position: fixed !important;
+        top: 12px !important;
+        left: 12px !important;
+        z-index: 999999 !important;
+        background-color: #101720 !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 8px !important;
+        color: #21D4A7 !important;
+        padding: 2px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6) !important;
+    }}
+    [data-testid="stSidebarCollapsedControl"]:hover {{
+        background-color: #131C27 !important;
+        border-color: #21D4A7 !important;
+    }}
+    [data-testid="stSidebarCollapsedControl"] svg,
+    [data-testid="stSidebarCollapsedControl"] span {{
+        color: #21D4A7 !important;
+        fill: #21D4A7 !important;
     }}
 
     /* Глобальный фон и базовый шрифт */
