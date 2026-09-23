@@ -1,0 +1,98 @@
+{
+  "dataset": "Open-Meteo Previous Runs fixed lead-time slices",
+  "model": "gfs_seamless",
+  "start_date": "2026-01-31",
+  "end_date": "2026-03-02",
+  "diagnostic_archive": "C:\\Users\\ADMIN\\Desktop\\ВЭС\\hack-fa5fc570-status-is-everything\\data\\weather\\diagnostics\\previous_runs_2026-01-31_2026-03-02.csv",
+  "sha256": "1f2236d47e066471d4322b221eaf6633358434fabac6860d04d827b33733cfcf",
+  "forecast_contract_compatible": false,
+  "reason": "Previous Runs omits exact model-run initialization and historical API availability; issued_at and available_at cannot be derived from these slices.",
+  "points": {
+    "turbine_1": {
+      "turbine_id": "turbine_1",
+      "requested_point": {
+        "latitude": 43.64515,
+        "longitude": 78.535604
+      },
+      "returned_grid_point": {
+        "latitude": 43.638138,
+        "longitude": 78.515625
+      },
+      "model": "gfs_seamless",
+      "hours": 744,
+      "first_valid_time": "2026-01-31T00:00:00+00:00",
+      "last_valid_time": "2026-03-02T23:00:00+00:00",
+      "series": {
+        "wind_speed_10m_previous_day1": {
+          "non_null": 744,
+          "null": 0
+        },
+        "wind_speed_10m_previous_day2": {
+          "non_null": 744,
+          "null": 0
+        },
+        "wind_speed_100m_previous_day1": {
+          "non_null": 744,
+          "null": 0
+        },
+        "wind_speed_100m_previous_day2": {
+          "non_null": 744,
+          "null": 0
+        },
+        "temperature_2m_previous_day1": {
+          "non_null": 744,
+          "null": 0
+        },
+        "temperature_2m_previous_day2": {
+          "non_null": 744,
+          "null": 0
+        }
+      },
+      "limitations": "Fixed lead-time slices only: no exact issued_at, available_at or single-run identity in this API response.",
+      "source_url": "https://previous-runs-api.open-meteo.com/v1/forecast?latitude=43.64515&longitude=78.535604&start_date=2026-01-31&end_date=2026-03-02&hourly=wind_speed_10m_previous_day1%2Cwind_speed_10m_previous_day2%2Cwind_speed_100m_previous_day1%2Cwind_speed_100m_previous_day2%2Ctemperature_2m_previous_day1%2Ctemperature_2m_previous_day2&models=gfs_seamless&wind_speed_unit=ms&timezone=GMT"
+    },
+    "turbine_2": {
+      "turbine_id": "turbine_2",
+      "requested_point": {
+        "latitude": 43.643198,
+        "longitude": 78.538828
+      },
+      "returned_grid_point": {
+        "latitude": 43.638138,
+        "longitude": 78.515625
+      },
+      "model": "gfs_seamless",
+      "hours": 744,
+      "first_valid_time": "2026-01-31T00:00:00+00:00",
+      "last_valid_time": "2026-03-02T23:00:00+00:00",
+      "series": {
+        "wind_speed_10m_previous_day1": {
+          "non_null": 744,
+          "null": 0
+        },
+        "wind_speed_10m_previous_day2": {
+          "non_null": 744,
+          "null": 0
+        },
+        "wind_speed_100m_previous_day1": {
+          "non_null": 744,
+          "null": 0
+        },
+        "wind_speed_100m_previous_day2": {
+          "non_null": 744,
+          "null": 0
+        },
+        "temperature_2m_previous_day1": {
+          "non_null": 744,
+          "null": 0
+        },
+        "temperature_2m_previous_day2": {
+          "non_null": 744,
+          "null": 0
+        }
+      },
+      "limitations": "Fixed lead-time slices only: no exact issued_at, available_at or single-run identity in this API response.",
+      "source_url": "https://previous-runs-api.open-meteo.com/v1/forecast?latitude=43.643198&longitude=78.538828&start_date=2026-01-31&end_date=2026-03-02&hourly=wind_speed_10m_previous_day1%2Cwind_speed_10m_previous_day2%2Cwind_speed_100m_previous_day1%2Cwind_speed_100m_previous_day2%2Ctemperature_2m_previous_day1%2Ctemperature_2m_previous_day2&models=gfs_seamless&wind_speed_unit=ms&timezone=GMT"
+    }
+  }
+}
