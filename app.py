@@ -4,8 +4,10 @@ from datetime import date
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import requests
 from src.agent import WindFarmAgent
-from src.previous_runs import exploratory_power
+from src.previous_runs import exploratory_power, load_archive
+from src.reporting import forecast_audit, physical_power
 from src.settings import ROOT, load_config
 
 st.set_page_config(page_title="Samruk WindPilot AI", page_icon="💨", layout="wide")
@@ -13,7 +15,7 @@ st.title("💨 Samruk WindPilot AI")
 st.caption("Почасовая нормализованная мощность каждой турбины • горизонт 24–48 часов")
 config = load_config()
 st.sidebar.header("Параметры расчёта")
-selected = st.sidebar.date_input("Дата расчёта", value=date(2026, 2, 1), min_value=date(2026, 2, 1))
+selected = st.sidebar.date_input("Дата расчёта", value=date(2026, 1, 31), min_value=date(2026, 1, 31))
 hour = st.sidebar.selectbox("Час расчёта", list(range(24)))
 horizon = st.sidebar.radio("Горизонт, часов", [24, 48], index=1)
 st.sidebar.caption(f"Местное время: {config['timezone'] or 'не установлено'}")
@@ -21,7 +23,7 @@ auto = st.sidebar.checkbox("Проверять новые выпуски каж�
 run = st.sidebar.button("Проверить погоду и рассчитать", type="primary")
 st.sidebar.caption("Автопроверка работает, пока открыта эта страница. Для фонового процесса используйте python -m src.agent --watch.")
 origin = f"{selected.isoformat()} {hour:02d}:00:00"
-exploratory_tab, forecast_tab, metrics_tab, data_tab, logs_tab = st.tabs(["Оценка за февраль", "Проверенный выпуск", "Проверка модели (январь)", "Качество данных", "Журнал действий"])
+exploratory_tab, forecast_tab, weather_metrics_tab, metrics_tab, data_tab, logs_tab = st.tabs(["Оценка за февраль", "Проверенный выпуск", "Проверка на прогнозной погоде", "Проверка модели (фактическая погода)", "Качество данных", "Журнал действий"])
 
 with forecast_tab:
     st.info("Единицы — средняя нормализованная мощность за час. Перевод в МВт, суммирование турбин и экономический эффект требуют подтверждённой шкалы нормализации.")
@@ -55,21 +57,41 @@ with forecast_tab:
     forecast_panel()
 
 with exploratory_tab:
-    st.subheader("Предварительная оценка на выбранную дату февраля")
+    st.subheader("Предварительная оценка с 31 января")
     st.warning("Срезы Open-Meteo сделаны с номинальным горизонтом 24 или 48 часов. API не подтверждает время конкретного выпуска и его доступность на выбранный момент. Это иллюстрация расчёта «погода → мощность», не проверенный исторический прогноз для диспетчеризации.")
     st.caption("Выбранные дата, час и горизонт находятся слева. Срезы взяты из gfs_seamless, ветер на 100 м и температура на 2 м. Высота измерения ветра в SCADA пока не подтверждена. Обе турбины попадают в одну ячейку погодной модели.")
-    archive = ROOT / "data/weather/diagnostics/previous_runs_2026-01-31_2026-03-02.csv"
-    if archive.exists():
+    st.caption(f"Модель обучается только на завершённых часах до момента расчёта. Предположение о задержке SCADA: {config['scada_delay_hours']} ч после окончания часа. Оно требует подтверждения оператора.")
+    try:
+        slices = load_archive(config)
+        estimate = exploratory_power(slices, pd.Timestamp(origin, tz=config["timezone"]), horizon, config=config)
+        estimate["local_time"] = pd.to_datetime(estimate.valid_time, utc=True).dt.tz_convert(config["timezone"])
+        st.plotly_chart(px.line(estimate, x="local_time", y="predicted_power", color="turbine_id", labels={"local_time": "Местное время", "predicted_power": "Оценка нормализованной мощности", "turbine_id": "Турбина"}), use_container_width=True)
+        st.dataframe(estimate[["turbine_id", "local_time", "nominal_lead_time_hours", "predicted_power"]], hide_index=True, width="stretch")
+        st.download_button("Скачать исследовательскую оценку CSV", estimate.to_csv(index=False), "exploratory_estimate.csv", "text/csv")
+        with st.expander("Проверки результата и обучающая история"):
+            st.json(forecast_audit(estimate, estimate))
         try:
-            slices = pd.read_csv(archive)
-            estimate = exploratory_power(slices, pd.Timestamp(origin, tz=config["timezone"]), horizon)
-            estimate["local_time"] = pd.to_datetime(estimate.valid_time, utc=True).dt.tz_convert(config["timezone"])
-            st.plotly_chart(px.line(estimate, x="local_time", y="predicted_power", color="turbine_id", labels={"local_time": "Местное время", "predicted_power": "Оценка нормализованной мощности", "turbine_id": "Турбина"}), use_container_width=True)
-            st.dataframe(estimate[["turbine_id", "local_time", "nominal_lead_time_hours", "predicted_power"]], hide_index=True, width="stretch")
-        except (ValueError, FileNotFoundError, KeyError) as exc:
-            st.info(f"Нет полной оценки на выбранный период: {exc}")
+            _, plant = physical_power(estimate, config)
+            st.dataframe(plant, hide_index=True)
+        except ValueError:
+            st.caption("МВт и общая выработка не показаны: коэффициент нормализации пока не подтверждён.")
+    except (ValueError, FileNotFoundError, KeyError, requests.RequestException) as exc:
+        st.info(f"Нет полной оценки на выбранный период: {exc}")
+
+with weather_metrics_tab:
+    st.subheader("Walk-forward: январь, архивная прогнозная погода")
+    st.warning("Исследовательская оценка по фиксированным срезам 24/48 ч, не строгий replay доступных выпусков. Высота SCADA-ветра и историческое время публикации не подтверждены. Метрики февраля невозможны: фактической мощности февраля в исходниках нет.")
+    report_path = ROOT / "reports/january_fixed_lead.json"
+    if report_path.exists():
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        st.caption(f"Успешных расчётов: {report['origins_succeeded']}/{report['origins_total']}. Для каждого дня — отдельная модель без последующих наблюдений.")
+        metric_rows = [{"Турбина": m["turbine_id"], "Номинальный горизонт": m["nominal_lead_hours"], "Часов": m["rows"], "MAE": m["model"]["mae"], "RMSE": m["model"]["rmse"], "MAE baseline": m["baseline"]["mae"], "Макс. ошибка": m["max_absolute_error"], "MAE ветра, м/с": m["wind_mae_ms"]} for m in report.get("metrics", {}).values()]
+        st.dataframe(pd.DataFrame(metric_rows), hide_index=True, width="stretch")
+        if any(m["model"]["mae"] >= m["baseline"]["mae"] for m in report.get("metrics", {}).values()):
+            st.error("На части проверок модель не превосходит baseline. Прототип пока нельзя считать готовым к диспетчерскому планированию.")
+        st.caption("Номинальный lead time относится к погодному срезу. Столбец hours_ahead в CSV показывает расстояние от момента расчёта до целевого часа.")
     else:
-        st.info("Диагностический погодный архив ещё не загружен. Команда приведена в README.")
+        st.info("Выполните python -m src.evaluation --january для расчёта метрик на прогнозной погоде.")
 
 with metrics_tab:
     path = ROOT / "reports/metrics.json"

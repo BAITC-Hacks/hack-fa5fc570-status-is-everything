@@ -5,10 +5,13 @@ import json
 import time
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 import pandas as pd
 from src.settings import ROOT, load_config, save_json
 from src.weather_service import WeatherService
 from src.predict import predict_power
+from src.model_store import model_for_origin
+from src.reporting import forecast_audit, physical_power
 
 class WindFarmAgent:
     def __init__(self, use_cache=True, config=None):
@@ -31,7 +34,11 @@ class WindFarmAgent:
             digest = hashlib.sha256(weather.sort_values(["turbine_id", "valid_time"]).to_csv(index=False).encode())
             digest.update(json.dumps(self.config, sort_keys=True).encode())
             for tid in self.config["turbines"]:
-                digest.update((ROOT / "models/validated" / f"{tid}.joblib").read_bytes())
+                _, model_path = model_for_origin(tid, weather.forecast_origin.iloc[0], self.config)
+                digest.update(model_path.read_bytes())
+            # Invalidate cached output when postprocessing or audit code changes too.
+            for module in ["predict.py", "reporting.py", "model_store.py", "agent.py"]:
+                digest.update((Path(__file__).parent / module).read_bytes())
             revision = digest.hexdigest()
             out = ROOT / "data/forecasts"
             out.mkdir(parents=True, exist_ok=True)
@@ -44,13 +51,19 @@ class WindFarmAgent:
                 return {**previous, "forecast": forecast, "changed": False}
             forecast = predict_power(weather, self.config)
             # Audit is recalculated from the new output on every revision.
-            audit = {}
-            for tid, group in forecast.groupby("turbine_id"):
-                source = weather[weather.turbine_id == tid]
-                audit[tid] = {"hours": len(group), "min_power": float(group.predicted_power.min()), "max_power": float(group.predicted_power.max()), "mean_power": float(group.predicted_power.mean()), "max_wind_ms": float(source.wind_speed.max()), "min_temperature_c": float(source.temperature.min())}
+            audit = forecast_audit(forecast, weather)
+            try:
+                forecast, plant = physical_power(forecast, self.config)
+                physical_status = "Confirmed multiplicative scales applied; plant hourly MW/MWh saved separately"
+            except ValueError as exc:
+                plant = None
+                physical_status = str(exc)
             filename = f"{key}_{revision[:16]}_{uuid.uuid4().hex[:8]}.csv"
             forecast.to_csv(out / filename, index=False)
-            state = {"revision": revision, "file": filename, "forecast_origin": origin, "horizon_hours": horizon_hours, "audit": audit, "units": "normalized hourly mean power, each turbine separately", "previous_revision": previous["revision"] if previous else None}
+            plant_file = filename.replace(".csv", "_plant.csv") if plant is not None else None
+            if plant is not None:
+                plant.to_csv(out / plant_file, index=False)
+            state = {"revision": revision, "file": filename, "plant_file": plant_file, "physical_status": physical_status, "forecast_origin": origin, "horizon_hours": horizon_hours, "audit": audit, "units": "normalized hourly mean power, each turbine separately", "previous_revision": previous["revision"] if previous else None}
             temporary = state_path.with_suffix(f".{uuid.uuid4().hex}.tmp")
             save_json(temporary, state)
             temporary.replace(state_path)

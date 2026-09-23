@@ -1,0 +1,6 @@
+# Preserve exact bytes of generated artifacts referenced by SHA256 manifests.
+data/weather/diagnostics/previous_runs_2025-12-31_2026-03-02.csv -text
+reports/february_exploratory_predictions.csv -text
+reports/january_fixed_lead_predictions.csv -text
+reports/january_fixed_lead_comparison.csv -text
+reports/january_fixed_lead_largest_errors.csv -text

@@ -6,13 +6,14 @@ Consequently this module must never publish data/weather/forecasts.csv.
 """
 import argparse
 import hashlib
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import pandas as pd
+import numpy as np
 import requests
 
-from src.settings import ROOT, save_json
+from src.settings import ROOT, save_json, load_config
 
 ENDPOINT = "https://previous-runs-api.open-meteo.com/v1/forecast"
 MODEL = "gfs_seamless"
@@ -71,7 +72,13 @@ def inspect_response(payload, turbine_id, requested_latitude, requested_longitud
         values = hourly.get(key)
         if not isinstance(values, list) or len(values) != len(stamps):
             raise ValueError(f"Missing or truncated series: {key}")
-        series = pd.to_numeric(pd.Series(values), errors="coerce")
+        series = pd.to_numeric(pd.Series(values), errors="raise")
+        if np.isinf(series).any():
+            raise ValueError(f"Non-finite series: {key}")
+        if key.startswith("wind_speed") and (series < 0).any():
+            raise ValueError(f"Negative wind speed: {key}")
+        if key.startswith("temperature") and (series <= -273.15).any():
+            raise ValueError(f"Invalid temperature: {key}")
         columns[key] = series
         counts[key] = {"non_null": int(series.notna().sum()), "null": int(series.isna().sum())}
     frame = pd.DataFrame(columns)
@@ -120,11 +127,11 @@ def candidate_for_origin(frame, origin, minimum_lead_hours=24):
     return pd.DataFrame(chosen)
 
 
-def exploratory_power(frame, origin, horizon_hours, model_dir=None):
+def exploratory_power(frame, origin, horizon_hours, model_dir=None, config=None):
     """Weather-to-power illustration; never an as-of compliant forecast."""
-    import joblib
-    import numpy as np
+    from src.model_store import model_for_origin, model_output
 
+    config = config or load_config()
     if horizon_hours not in (24, 48):
         raise ValueError("horizon_hours must be 24 or 48")
     origin = pd.Timestamp(origin)
@@ -139,6 +146,8 @@ def exploratory_power(frame, origin, horizon_hours, model_dir=None):
         raise ValueError("No fixed-lead weather slices for this origin")
     if selected.duplicated(["turbine_id", "valid_time"]).any():
         raise ValueError("Duplicate fixed-lead hour")
+    if set(selected.turbine_id) != set(config["turbines"]):
+        raise ValueError("Fixed-lead archive must contain every configured turbine")
     results = []
     for tid, group in selected.groupby("turbine_id"):
         expected = pd.date_range(origin + pd.Timedelta(hours=1), periods=horizon_hours, freq="h")
@@ -146,13 +155,20 @@ def exploratory_power(frame, origin, horizon_hours, model_dir=None):
             raise ValueError(f"{tid}: incomplete {horizon_hours}h fixed-lead window")
         if not np.isfinite(group[["wind_speed_100m", "temperature_2m"]].to_numpy(dtype=float)).all():
             raise ValueError(f"{tid}: null or non-finite fixed-lead weather")
-        artifact_path = (Path(model_dir) if model_dir else ROOT / "models/validated") / f"{tid}.joblib"
-        artifact = joblib.load(artifact_path)
-        if artifact.get("schema_version") != 2 or artifact["turbine_id"] != tid:
-            raise ValueError("Incompatible model artifact")
+        artifact, _ = model_for_origin(tid, origin, config, model_dir)
         features = group.rename(columns={"wind_speed_100m": "wind_speed", "temperature_2m": "temperature"})
         output = group[["turbine_id", "valid_time", "nominal_lead_time_hours"]].copy()
-        output["predicted_power"] = artifact["model"].predict(features[artifact["features"]])
+        output = output.join(model_output(artifact, features))
+        output["baseline_prediction"] = artifact["baseline"].predict(features)
+        output["wind_speed"] = features.wind_speed
+        output["temperature"] = features.temperature
+        output["forecast_origin"] = origin
+        output["hours_ahead"] = (output.valid_time - origin).dt.total_seconds() / 3600
+        output["model_training_max"] = artifact["training_max"]
+        output["model_training_available_at"] = artifact["training_available_at"]
+        output["model_id"] = artifact["identity"]
+        output["weather_model"] = MODEL
+        output["forecast_contract_compatible"] = False
         results.append(output)
     return pd.concat(results, ignore_index=True)
 
@@ -165,6 +181,9 @@ def audit_points(points, start_date, end_date, output_dir=None, session=None):
     for turbine_id, (latitude, longitude) in points.items():
         payload, url = fetch_previous_runs(latitude, longitude, start_date, end_date, session)
         frame, report = inspect_response(payload, turbine_id, latitude, longitude)
+        expected = pd.date_range(start_date, pd.Timestamp(end_date) + pd.Timedelta(hours=23), freq="h", tz="UTC")
+        if list(frame.valid_time) != list(expected):
+            raise ValueError(f"{turbine_id}: response does not cover requested date range")
         report["source_url"] = url
         frames.append(frame)
         reports[turbine_id] = report
@@ -180,6 +199,7 @@ def audit_points(points, start_date, end_date, output_dir=None, session=None):
         "end_date": end_date,
         "diagnostic_archive": str(archive),
         "sha256": hashlib.sha256(raw).hexdigest(),
+        "retrieved_at": datetime.now(timezone.utc).isoformat(),
         "forecast_contract_compatible": False,
         "reason": "Previous Runs omits exact model-run initialization and historical API availability; issued_at and available_at cannot be derived from these slices.",
         "points": reports,
@@ -188,15 +208,59 @@ def audit_points(points, start_date, end_date, output_dir=None, session=None):
     return summary
 
 
+def configured_points(config):
+    points = {}
+    for tid, turbine in config["turbines"].items():
+        lat, lon = turbine.get("latitude"), turbine.get("longitude")
+        if lat is None or lon is None:
+            raise ValueError(f"{tid}: configure confirmed latitude and longitude")
+        points[tid] = (lat, lon)
+    return points
+
+
+def load_archive(config=None, refresh=False):
+    """Automatically download missing diagnostic data; verify persisted provenance."""
+    import json
+    config = config or load_config()
+    settings = config["exploratory_weather"]
+    path = ROOT / settings["archive"]
+    manifest = path.with_suffix(".json")
+    points = configured_points(config)
+    expected_name = f"previous_runs_{settings['start_date']}_{settings['end_date']}.csv"
+    if path.name != expected_name:
+        raise ValueError("exploratory_weather.archive must match its configured dates")
+    if refresh or not path.exists() or not manifest.exists():
+        audit_points(points, settings["start_date"], settings["end_date"], output_dir=path.parent)
+    metadata = json.loads(manifest.read_text(encoding="utf-8"))
+    if metadata["sha256"] != hashlib.sha256(path.read_bytes()).hexdigest():
+        raise ValueError("Diagnostic archive checksum mismatch; explicitly refresh the archive")
+    if metadata["model"] != MODEL:
+        raise ValueError("Diagnostic archive model mismatch")
+    if (metadata["start_date"], metadata["end_date"]) != (settings["start_date"], settings["end_date"]):
+        raise ValueError("Diagnostic archive period mismatch")
+    for tid, (lat, lon) in points.items():
+        if metadata["points"][tid]["requested_point"] != {"latitude": lat, "longitude": lon}:
+            raise ValueError("Diagnostic archive coordinates changed; refresh required")
+    frame = pd.read_csv(path, parse_dates=["valid_time"])
+    if set(frame.turbine_id) != set(points):
+        raise ValueError("Diagnostic archive turbine mismatch")
+    return frame
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--start-date", required=True)
-    parser.add_argument("--end-date", required=True)
-    parser.add_argument("--turbine-1", nargs=2, metavar=("LAT", "LON"), type=float, required=True)
-    parser.add_argument("--turbine-2", nargs=2, metavar=("LAT", "LON"), type=float, required=True)
+    parser.add_argument("--start-date")
+    parser.add_argument("--end-date")
+    parser.add_argument("--turbine-1", nargs=2, metavar=("LAT", "LON"), type=float)
+    parser.add_argument("--turbine-2", nargs=2, metavar=("LAT", "LON"), type=float)
     args = parser.parse_args()
-    points = {"turbine_1": tuple(args.turbine_1), "turbine_2": tuple(args.turbine_2)}
-    result = audit_points(points, args.start_date, args.end_date)
+    config = load_config()
+    points = configured_points(config)
+    if args.turbine_1:
+        points["turbine_1"] = tuple(args.turbine_1)
+    if args.turbine_2:
+        points["turbine_2"] = tuple(args.turbine_2)
+    result = audit_points(points, args.start_date or config["exploratory_weather"]["start_date"], args.end_date or config["exploratory_weather"]["end_date"])
     for tid, point in result["points"].items():
         print(tid, point["hours"], point["returned_grid_point"], point["series"])
     print("Contract compatible:", result["forecast_contract_compatible"])

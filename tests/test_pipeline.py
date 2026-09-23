@@ -170,8 +170,11 @@ class ModelIntegrationTests(unittest.TestCase):
         result = predict_power(weather_fixture())
         self.assertEqual(len(result), 96)
         self.assertTrue(np.isfinite(result.predicted_power).all())
-        with self.assertRaisesRegex(ValueError, "later than"):
-            predict_power(weather_fixture(origin="2026-01-01T00:00:00+05:00"))
+        # Earlier origins now select a point-in-time refit, not the final January model.
+        earlier = predict_power(weather_fixture(origin="2026-01-31T00:00:00+05:00"))
+        available = pd.to_datetime(earlier.model_training_available_at, utc=True)
+        self.assertTrue((available <= earlier.forecast_origin).all())
+        self.assertTrue((pd.to_datetime(earlier.model_training_max) < pd.Timestamp("2026-01-31")).all())
 
     def test_agent_persists_versions_and_reaudits_updates(self):
         # Mock only weather transport; run the real saved models and agent.

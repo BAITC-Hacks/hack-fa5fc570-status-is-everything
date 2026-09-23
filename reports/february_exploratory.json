@@ -1,0 +1,965 @@
+{
+  "origins_total": 29,
+  "origins_succeeded": 29,
+  "origins_failed": 0,
+  "errors": [],
+  "start": "2026-01-31",
+  "end": "2026-02-28",
+  "horizon_hours": 48,
+  "forecast_contract_compatible": false,
+  "limitation": "Exploratory fixed-lead weather evaluation, not verified as-of accuracy: exact issued_at/available_at and SCADA wind-height compatibility are unknown. SCADA availability follows the configured delay assumption. Outage labels are absent.",
+  "weather_sha256": "856645ad2ce3d81dcaf9e4ad6a8c61e92db90a970daf6207ea079e4084843ca6",
+  "predictions_sha256": "6d537501ebbb98addb7c2b3598b463fbabcc5d8bd28c4fff98eb17c0383cd737",
+  "audit": {
+    "2026-01-31 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.021265580974671534,
+        "max_power": 0.9929983633994662,
+        "mean_power": 0.8377100705036585,
+        "max_wind_ms": 16.23,
+        "min_temperature_c": -4.5,
+        "max_hourly_power_change": 0.48498094357759436,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-30 22:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.018242387303639,
+        "max_power": 0.9910175832938237,
+        "mean_power": 0.8117265446117288,
+        "max_wind_ms": 16.23,
+        "min_temperature_c": -4.5,
+        "max_hourly_power_change": 0.436844252116292,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-30 22:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-01 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.06232354788316417,
+        "max_power": 0.9922561973873664,
+        "mean_power": 0.8044319845307069,
+        "max_wind_ms": 14.72,
+        "min_temperature_c": -2.6,
+        "max_hourly_power_change": 0.3539175849476119,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 22:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.05913540092272042,
+        "max_power": 0.9880984728305322,
+        "mean_power": 0.7819958295111146,
+        "max_wind_ms": 14.72,
+        "min_temperature_c": -2.6,
+        "max_hourly_power_change": 0.3658814231373959,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 22:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-02 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.0092852690150297,
+        "max_power": 0.9948453950370864,
+        "mean_power": 0.6189544996290203,
+        "max_wind_ms": 14.79,
+        "min_temperature_c": -1.1,
+        "max_hourly_power_change": 0.3336746164443151,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009653921031100122,
+        "max_power": 0.995,
+        "mean_power": 0.6031555759639547,
+        "max_wind_ms": 14.79,
+        "min_temperature_c": -1.1,
+        "max_hourly_power_change": 0.2916393269663111,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-03 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.01165988744213004,
+        "max_power": 0.9838126638621807,
+        "mean_power": 0.3897005525091109,
+        "max_wind_ms": 12.04,
+        "min_temperature_c": -1.4,
+        "max_hourly_power_change": 0.2728637457814251,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.010166993562516151,
+        "max_power": 0.9831578126313307,
+        "mean_power": 0.36973876407881345,
+        "max_wind_ms": 12.04,
+        "min_temperature_c": -1.4,
+        "max_hourly_power_change": 0.2575939143431204,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-04 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.010047627264599932,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.664775914989714,
+        "max_wind_ms": 17.73,
+        "min_temperature_c": 0.2,
+        "max_hourly_power_change": 0.5614352213942476,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009708834925339764,
+        "max_power": 0.9912399871293519,
+        "mean_power": 0.6489917681477748,
+        "max_wind_ms": 17.73,
+        "min_temperature_c": 0.2,
+        "max_hourly_power_change": 0.5566271743011533,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-05 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.010033899516681813,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.7841763971960148,
+        "max_wind_ms": 16.97,
+        "min_temperature_c": 0.2,
+        "max_hourly_power_change": 0.4601250886329047,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009401405898811742,
+        "max_power": 0.986505955837188,
+        "mean_power": 0.7628525919039918,
+        "max_wind_ms": 16.97,
+        "min_temperature_c": 0.2,
+        "max_hourly_power_change": 0.47327886304151634,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 1,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 weather hours outside training range; extrapolation risk",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-06 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.009477333608858786,
+        "max_power": 0.9970419037572272,
+        "mean_power": 0.5318381836169307,
+        "max_wind_ms": 16.9,
+        "min_temperature_c": 0.2,
+        "max_hourly_power_change": 0.4951846544502563,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.00913492370577482,
+        "max_power": 0.9896539977971589,
+        "mean_power": 0.5138862077656856,
+        "max_wind_ms": 16.9,
+        "min_temperature_c": 0.2,
+        "max_hourly_power_change": 0.49842318913493605,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-07 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.009293879232444138,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.4777274880665335,
+        "max_wind_ms": 16.92,
+        "min_temperature_c": -0.6,
+        "max_hourly_power_change": 0.6558134744433337,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009401405898811742,
+        "max_power": 0.995,
+        "mean_power": 0.45028150693331764,
+        "max_wind_ms": 16.92,
+        "min_temperature_c": -0.6,
+        "max_hourly_power_change": 0.626774962613187,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-08 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.010026329416770376,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.7136480822740028,
+        "max_wind_ms": 20.21,
+        "min_temperature_c": -1.6,
+        "max_hourly_power_change": 0.49471505735005056,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009605254919308578,
+        "max_power": 0.995,
+        "mean_power": 0.6788312724614777,
+        "max_wind_ms": 20.21,
+        "min_temperature_c": -1.6,
+        "max_hourly_power_change": 0.5335025905246982,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 9,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "9 weather hours outside training range; extrapolation risk",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-09 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.04054281422234528,
+        "max_power": 0.997060148304086,
+        "mean_power": 0.6585650017174862,
+        "max_wind_ms": 19.5,
+        "min_temperature_c": -2.3,
+        "max_hourly_power_change": 0.36516448757603925,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.03974685313178441,
+        "max_power": 0.9787280531089871,
+        "mean_power": 0.631758294982659,
+        "max_wind_ms": 19.5,
+        "min_temperature_c": -2.3,
+        "max_hourly_power_change": 0.35330415379369273,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 1,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 weather hours outside training range; extrapolation risk",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-10 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.010153415557637092,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.615803880916822,
+        "max_wind_ms": 15.97,
+        "min_temperature_c": -0.7,
+        "max_hourly_power_change": 0.9530506418577988,
+        "bounded_hours": 2,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "2 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009401405898811742,
+        "max_power": 0.9823358947005796,
+        "mean_power": 0.5920987193335384,
+        "max_wind_ms": 15.97,
+        "min_temperature_c": -0.7,
+        "max_hourly_power_change": 0.9323979489398664,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-11 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.023546868668649353,
+        "max_power": 0.9945117525839626,
+        "mean_power": 0.577634036429426,
+        "max_wind_ms": 17.28,
+        "min_temperature_c": 0.2,
+        "max_hourly_power_change": 0.8838434187980545,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.01796880353431113,
+        "max_power": 0.995,
+        "mean_power": 0.5548724343720383,
+        "max_wind_ms": 17.28,
+        "min_temperature_c": 0.2,
+        "max_hourly_power_change": 0.871185801914043,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-12 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.00924642829421385,
+        "max_power": 0.9853595376520679,
+        "mean_power": 0.17135022902219313,
+        "max_wind_ms": 12.53,
+        "min_temperature_c": -0.6,
+        "max_hourly_power_change": 0.5593255195248775,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.0068293294999189095,
+        "max_power": 0.972021125375996,
+        "mean_power": 0.16044561213185288,
+        "max_wind_ms": 12.53,
+        "min_temperature_c": -0.6,
+        "max_hourly_power_change": 0.5241824324542204,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 1,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 weather hours outside training range; extrapolation risk",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-13 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.008993566360697952,
+        "max_power": 0.9945117525839626,
+        "mean_power": 0.39706331822767105,
+        "max_wind_ms": 12.22,
+        "min_temperature_c": -1.1,
+        "max_hourly_power_change": 0.3455439607961791,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009142869643178357,
+        "max_power": 0.9740733420806467,
+        "mean_power": 0.38689278864522764,
+        "max_wind_ms": 12.22,
+        "min_temperature_c": -1.1,
+        "max_hourly_power_change": 0.36972102149239794,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-14 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.00971789083440588,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.5357674577065171,
+        "max_wind_ms": 13.28,
+        "min_temperature_c": 0.1,
+        "max_hourly_power_change": 0.32392623516324626,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009142869643178357,
+        "max_power": 0.9810095811568688,
+        "mean_power": 0.5161305992778342,
+        "max_wind_ms": 13.28,
+        "min_temperature_c": 0.1,
+        "max_hourly_power_change": 0.3576966659855445,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-15 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.024704621683178482,
+        "max_power": 0.996971650731504,
+        "mean_power": 0.8567816450121318,
+        "max_wind_ms": 15.01,
+        "min_temperature_c": 0.5,
+        "max_hourly_power_change": 0.33020376004931457,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.018879783313870246,
+        "max_power": 0.9801223615140366,
+        "mean_power": 0.8454125727041385,
+        "max_wind_ms": 15.01,
+        "min_temperature_c": 0.5,
+        "max_hourly_power_change": 0.32367436960289836,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-16 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.13575683784652787,
+        "max_power": 0.995554552998494,
+        "mean_power": 0.7610119554129421,
+        "max_wind_ms": 14.27,
+        "min_temperature_c": 2.4,
+        "max_hourly_power_change": 0.40637802664192524,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.11467982234068061,
+        "max_power": 0.9784849596331349,
+        "mean_power": 0.7514093919466164,
+        "max_wind_ms": 14.27,
+        "min_temperature_c": 2.4,
+        "max_hourly_power_change": 0.42739429567730736,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-17 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.24851738532505385,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.8550768788341673,
+        "max_wind_ms": 14.09,
+        "min_temperature_c": 2.6,
+        "max_hourly_power_change": 0.18310331299151533,
+        "bounded_hours": 3,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "3 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.22184270936834286,
+        "max_power": 0.9798030172530507,
+        "mean_power": 0.8344084616369916,
+        "max_wind_ms": 14.09,
+        "min_temperature_c": 2.6,
+        "max_hourly_power_change": 0.20511455653237676,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-18 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.0987935760572011,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.8272117547201266,
+        "max_wind_ms": 14.82,
+        "min_temperature_c": 3.0,
+        "max_hourly_power_change": 0.18669519278094338,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.09325767708272084,
+        "max_power": 0.9811648468316909,
+        "mean_power": 0.8227165737686182,
+        "max_wind_ms": 14.82,
+        "min_temperature_c": 3.0,
+        "max_hourly_power_change": 0.18168821959874593,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-19 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.009981222013678926,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.45602807260019124,
+        "max_wind_ms": 14.58,
+        "min_temperature_c": 5.1,
+        "max_hourly_power_change": 0.8533697339444765,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009576305217229342,
+        "max_power": 0.9786688145313346,
+        "mean_power": 0.4440847344615954,
+        "max_wind_ms": 14.58,
+        "min_temperature_c": 5.1,
+        "max_hourly_power_change": 0.8230970297452977,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-20 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.010117618902425227,
+        "max_power": 0.9959266409779138,
+        "mean_power": 0.5172728338324855,
+        "max_wind_ms": 16.45,
+        "min_temperature_c": 5.0,
+        "max_hourly_power_change": 0.6581796220697989,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009628406102570587,
+        "max_power": 0.9764758782872127,
+        "mean_power": 0.4981471842054579,
+        "max_wind_ms": 16.45,
+        "min_temperature_c": 5.0,
+        "max_hourly_power_change": 0.6390012019451665,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-21 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.0092852690150297,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.6644870358516003,
+        "max_wind_ms": 17.92,
+        "min_temperature_c": 2.5,
+        "max_hourly_power_change": 0.9752409630526176,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.00956040937903745,
+        "max_power": 0.9780097311001736,
+        "mean_power": 0.6397870705588752,
+        "max_wind_ms": 17.92,
+        "min_temperature_c": 2.5,
+        "max_hourly_power_change": 0.9579092109098791,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-22 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.009625215103744622,
+        "max_power": 0.9959266409779138,
+        "mean_power": 0.5707807069951931,
+        "max_wind_ms": 14.2,
+        "min_temperature_c": 1.0,
+        "max_hourly_power_change": 0.7061786253842859,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009605254919308578,
+        "max_power": 0.9781399300304243,
+        "mean_power": 0.5488473822817627,
+        "max_wind_ms": 14.2,
+        "min_temperature_c": 1.0,
+        "max_hourly_power_change": 0.6894718741932389,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-23 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.00966447145927752,
+        "max_power": 0.9853595376520679,
+        "mean_power": 0.5580234738639396,
+        "max_wind_ms": 11.83,
+        "min_temperature_c": -1.0,
+        "max_hourly_power_change": 0.6403517774569389,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009216829200657469,
+        "max_power": 0.980041222514132,
+        "mean_power": 0.54103303071617,
+        "max_wind_ms": 11.83,
+        "min_temperature_c": -1.0,
+        "max_hourly_power_change": 0.5923785304339866,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-24 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.00872973990171353,
+        "max_power": 0.9875509946693134,
+        "mean_power": 0.582546487580693,
+        "max_wind_ms": 11.85,
+        "min_temperature_c": -1.9,
+        "max_hourly_power_change": 0.302399379171784,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.009167981652274134,
+        "max_power": 0.9812597132647136,
+        "mean_power": 0.558306786489089,
+        "max_wind_ms": 11.85,
+        "min_temperature_c": -1.9,
+        "max_hourly_power_change": 0.31974395292032987,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-25 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.008993566360697952,
+        "max_power": 0.998020023869793,
+        "mean_power": 0.5009184822662957,
+        "max_wind_ms": 14.61,
+        "min_temperature_c": -1.3,
+        "max_hourly_power_change": 0.5855184845055836,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.00935155374655712,
+        "max_power": 0.9832638373629549,
+        "mean_power": 0.4845701436716024,
+        "max_wind_ms": 14.61,
+        "min_temperature_c": -1.3,
+        "max_hourly_power_change": 0.6017712439510454,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-26 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.02635278765592247,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.7593181058545189,
+        "max_wind_ms": 14.53,
+        "min_temperature_c": -4.9,
+        "max_hourly_power_change": 0.3685099898906178,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.022560489316035104,
+        "max_power": 0.995,
+        "mean_power": 0.7380197912315567,
+        "max_wind_ms": 14.53,
+        "min_temperature_c": -4.9,
+        "max_hourly_power_change": 0.36741357114129836,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-27 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.20309890003465111,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.8169291748037866,
+        "max_wind_ms": 13.6,
+        "min_temperature_c": -5.8,
+        "max_hourly_power_change": 0.32739726278217035,
+        "bounded_hours": 1,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "1 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.19727272639035406,
+        "max_power": 0.9940592727578508,
+        "mean_power": 0.7986362774917399,
+        "max_wind_ms": 13.6,
+        "min_temperature_c": -5.8,
+        "max_hourly_power_change": 0.31765310717428386,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    },
+    "2026-02-28 00:00:00+05:00": {
+      "turbine_1": {
+        "hours": 48,
+        "min_power": 0.009101397760147319,
+        "max_power": 0.9983333333333334,
+        "mean_power": 0.6309888112602574,
+        "max_wind_ms": 15.03,
+        "min_temperature_c": -6.8,
+        "max_hourly_power_change": 0.5908130074385306,
+        "bounded_hours": 2,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "2 model outputs bounded to training power range; raw output retained",
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      },
+      "turbine_2": {
+        "hours": 48,
+        "min_power": 0.008736565829920263,
+        "max_power": 0.9921633301534604,
+        "mean_power": 0.6123136150199899,
+        "max_wind_ms": 15.03,
+        "min_temperature_c": -6.8,
+        "max_hourly_power_change": 0.5549645864063877,
+        "bounded_hours": 0,
+        "weather_out_of_training_range_hours": 0,
+        "model_training_max": "2026-01-31 23:00:00",
+        "warnings": [
+          "No turbine availability/curtailment telemetry: outages cannot be predicted reliably"
+        ]
+      }
+    }
+  }
+}

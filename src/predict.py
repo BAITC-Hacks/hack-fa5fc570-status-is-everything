@@ -1,8 +1,8 @@
 """Strict forecast contract. Never infer unknown publication/availability times."""
-import joblib
 import numpy as np
 import pandas as pd
-from src.settings import ROOT, load_config
+from src.settings import load_config
+from src.model_store import model_for_origin, model_output
 
 TIME_FIELDS = ["forecast_origin", "issued_at", "available_at", "valid_time"]
 REQUIRED = ["turbine_id"] + TIME_FIELDS + ["wind_speed", "temperature"]
@@ -51,22 +51,13 @@ def predict_power(weather_dataframe, config=None):
     config = config or load_config()
     d = validate_weather(weather_dataframe, config)
     results = []
-    for tid, group in d.groupby("turbine_id"):
-        path = ROOT / "models/validated" / f"{tid}.joblib"
-        if not path.exists():
-            raise FileNotFoundError("Validated model missing; run python -m src.train")
-        artifact = joblib.load(path)
-        if artifact.get("schema_version") != 2 or artifact["turbine_id"] != tid:
-            raise ValueError("Incompatible model artifact")
-        for key in ["timezone", "timestamp_meaning", "measurement_minutes", "min_hourly_coverage", "history_cutoff"]:
-            if artifact["config"][key] != config[key]:
-                raise ValueError(f"Configuration changed ({key}); retrain models")
-        cutoff = pd.Timestamp(artifact["history_cutoff"]).tz_localize(config["timezone"]).tz_convert("UTC")
-        if (group.forecast_origin < cutoff).any():
-            raise ValueError("Model includes observations later than this forecast origin")
-        result = group[["turbine_id", "forecast_origin", "valid_time"]].copy()
-        result["predicted_power"] = artifact["model"].predict(group[artifact["features"]])
-        if not np.isfinite(result.predicted_power).all():
-            raise ValueError("Non-finite model output")
+    for (tid, origin), group in d.groupby(["turbine_id", "forecast_origin"]):
+        artifact, _ = model_for_origin(tid, origin, config)
+        result = group[["turbine_id", "forecast_origin", "issued_at", "available_at", "valid_time"]].copy()
+        result["lead_time_hours"] = (group.valid_time - group.issued_at).dt.total_seconds() / 3600
+        result = result.join(model_output(artifact, group))
+        result["model_training_max"] = artifact["training_max"]
+        result["model_training_available_at"] = artifact["training_available_at"]
+        result["model_id"] = artifact["identity"]
         results.append(result)
     return pd.concat(results, ignore_index=True)

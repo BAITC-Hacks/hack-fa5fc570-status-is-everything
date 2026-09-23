@@ -1,7 +1,14 @@
 {
+  "start_origin": "2026-01-31",
+  "end_origin": "2026-02-28",
+  "origins_total": 29,
   "origins_succeeded": 0,
-  "origins_failed": 28,
+  "origins_failed": 29,
   "errors": [
+    {
+      "origin": "2026-01-31 00:00:00+05:00",
+      "error": "Проверенные выпуски погоды отсутствуют. Нужны data/weather/forecasts.csv и source.json; старый кэш не используется."
+    },
     {
       "origin": "2026-02-01 00:00:00+05:00",
       "error": "Проверенные выпуски погоды отсутствуют. Нужны data/weather/forecasts.csv и source.json; старый кэш не используется."
@@ -115,5 +122,5 @@
       "error": "Проверенные выпуски погоды отсутствуют. Нужны data/weather/forecasts.csv и source.json; старый кэш не используется."
     }
   ],
-  "limitation": "Replay predictions only. February observed power is absent, so no February accuracy metric is reported."
+  "limitation": "Strict replay predictions only. Includes Jan 31 origin. February observed power is absent, so no February accuracy metric is reported."
 }
